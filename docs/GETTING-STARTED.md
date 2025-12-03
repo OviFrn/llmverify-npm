@@ -4,6 +4,51 @@ A beginner-friendly guide for students and developers new to LLM safety.
 
 ---
 
+## Quick Start (30 seconds)
+
+```bash
+# Install
+npm install llmverify
+
+# Run the setup wizard
+npx llmverify wizard
+
+# Or jump straight in with the master command
+npx llmverify run "Your AI output here" --preset dev
+```
+
+---
+
+## For AI Agents & Copilots
+
+If you're an AI assistant helping a developer, here's the essential import:
+
+```typescript
+import { run, isInputSafe, redactPII } from 'llmverify';
+
+// Verify AI output before returning to user
+const result = await run({
+  content: aiResponse,
+  prompt: originalPrompt,
+  preset: 'prod'  // Use 'prod' for production, 'dev' for development
+});
+
+// Check result
+if (result.verification.risk.level === 'critical') {
+  // Block this response
+}
+```
+
+**Quick Reference:**
+- `run()` - Master function, runs all verification engines
+- `isInputSafe()` - Check user input for injection attacks
+- `redactPII()` - Remove sensitive data from output
+- `devVerify()` / `prodVerify()` - Quick preset helpers
+
+See [AI-INTEGRATION.md](AI-INTEGRATION.md) for complete AI integration patterns.
+
+---
+
 ## What is llmverify?
 
 When you build apps that use AI (like ChatGPT, Claude, or any LLM), the AI can sometimes:
@@ -297,12 +342,60 @@ See [LIMITATIONS.md](LIMITATIONS.md) for full details.
 
 ---
 
+## Using Presets (Recommended)
+
+llmverify includes preset configurations for different use cases:
+
+```typescript
+import { run, devVerify, prodVerify } from 'llmverify';
+
+// Master run function with preset
+const result = await run({
+  content: aiOutput,
+  prompt: originalPrompt,  // Optional: enables classification
+  preset: 'dev'            // dev | prod | strict | fast | ci
+});
+
+// Or use quick helpers
+const devResult = await devVerify(aiOutput, prompt);
+const prodResult = await prodVerify(aiOutput);
+```
+
+### Available Presets
+
+| Preset | When to Use | Speed |
+|--------|-------------|-------|
+| `dev` | Local development & testing | ●●●○○ |
+| `prod` | Production APIs (low latency) | ●●●●● |
+| `strict` | High-stakes, compliance | ●●○○○ |
+| `fast` | High-throughput pipelines | ●●●●● |
+| `ci` | CI/CD pipelines | ●●●●○ |
+
+### CLI Commands
+
+```bash
+# Setup wizard (first-time users)
+npx llmverify wizard
+
+# Run with preset
+npx llmverify run "AI output" --preset dev
+
+# Benchmark all presets
+npx llmverify benchmark
+
+# List all presets
+npx llmverify presets
+```
+
+---
+
 ## Next Steps
 
-1. **Try the examples** - Check out `/examples` in the repo
-2. **Read the API docs** - See the main README for all functions
-3. **Understand the algorithms** - Read [ALGORITHMS.md](ALGORITHMS.md) to see how it works
-4. **Know the limits** - Read [LIMITATIONS.md](LIMITATIONS.md) before going to production
+1. **Run the wizard** - `npx llmverify wizard` for guided setup
+2. **Try the examples** - Check out `/examples` in the repo
+3. **Read the API docs** - See the main README for all functions
+4. **Understand the algorithms** - Read [ALGORITHMS.md](ALGORITHMS.md) to see how it works
+5. **Know the limits** - Read [LIMITATIONS.md](LIMITATIONS.md) before going to production
 
 ---
 

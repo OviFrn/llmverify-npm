@@ -25,7 +25,51 @@ const program = new Command();
 program
   .name('llmverify')
   .description('AI Output Verification Toolkit - Local-first, privacy-preserving')
-  .version(VERSION);
+  .version(VERSION, '-V, --version', 'Output the version number')
+  .addHelpText('beforeAll', chalk.cyan(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  llmverify v${VERSION} — AI Output Verification Toolkit                          ║
+║  Local-first • Zero telemetry • Privacy-preserving                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+`))
+  .addHelpText('after', `
+${chalk.bold('Core Commands:')}
+  ${chalk.cyan('run')}         ${chalk.yellow('★')} Master command - run all engines with presets (dev/prod/strict/fast/ci)
+  ${chalk.cyan('verify')}      Run multi-engine verification on AI output (default)
+  ${chalk.cyan('engines')}     List all verification engines with status
+  ${chalk.cyan('explain')}     Explain how a specific engine works
+  ${chalk.cyan('adapters')}    List available LLM provider adapters
+
+${chalk.bold('Setup & Config:')}
+  ${chalk.cyan('wizard')}      ${chalk.yellow('★')} Interactive setup wizard for first-time users
+  ${chalk.cyan('presets')}     List available preset configurations
+  ${chalk.cyan('init')}        Initialize llmverify.config.json
+  ${chalk.cyan('doctor')}      Check system health and configuration
+  ${chalk.cyan('privacy')}     Show privacy guarantees
+
+${chalk.bold('Help & Info:')}
+  ${chalk.cyan('info')}        Show package info, docs, and funding links
+  ${chalk.cyan('tutorial')}    Show usage examples and quick start guide
+
+${chalk.bold('Quick Examples:')}
+  ${chalk.green('$ npx llmverify run "AI output" --preset dev')}       ${chalk.dim('# Master command')}
+  ${chalk.green('$ npx llmverify run "AI output" --preset prod')}      ${chalk.dim('# Production mode')}
+  ${chalk.green('$ npx llmverify wizard')}                             ${chalk.dim('# First-time setup')}
+  ${chalk.green('$ npx llmverify verify "Your AI response here"')}
+  ${chalk.green('$ npx llmverify doctor')}
+
+${chalk.bold('Exit Codes (CI/CD):')}
+  ${chalk.green('0')} = Low risk (allow)
+  ${chalk.yellow('1')} = Moderate risk (review)
+  ${chalk.red('2')} = High/Critical risk (block)
+
+${chalk.bold('Documentation:')}
+  README:          ${chalk.blue('https://github.com/subodhkc/llmverify-npm#readme')}
+  CLI Reference:   ${chalk.blue('docs/CLI-REFERENCE.md')}
+  Troubleshooting: ${chalk.blue('docs/TROUBLESHOOTING.md')}
+
+${chalk.yellow('☕ Support development:')} npm fund or https://www.buymeacoffee.com/subodhkc
+`);
 
 program
   .command('verify', { isDefault: true })
@@ -152,6 +196,856 @@ program
       console.log(`  ✗ ${item}`);
     });
     
+    console.log();
+  });
+
+// ============================================================================
+// COMMAND: info
+// ============================================================================
+
+program
+  .command('info')
+  .description('Show package info, docs, privacy, and funding options')
+  .option('--json', 'Output as JSON')
+  .action((options) => {
+    const info = {
+      name: 'llmverify',
+      version: VERSION,
+      maintainer: 'Subodh KC (KingCaliber Labs)',
+      engines: [
+        'classification (intent, hallucination, reasoning)',
+        'CSM6 (security, PII, harmful content, injection)',
+        'hallucination detection',
+        'drift analysis',
+        'latency monitoring',
+        'token-rate tracking'
+      ],
+      docs: {
+        readme: 'README.md',
+        cli: 'docs/CLI.md',
+        engines: 'docs/ENGINES.md',
+        api: 'docs/API.md'
+      },
+      privacy: 'No telemetry, no remote logging. All analysis local.',
+      funding: 'https://www.buymeacoffee.com/subodhkc'
+    };
+    
+    if (options.json) {
+      console.log(JSON.stringify(info, null, 2));
+      return;
+    }
+    
+    console.log(chalk.blue('\n📦 llmverify Package Information\n'));
+    
+    console.log(chalk.bold('Package'));
+    console.log(chalk.gray('─'.repeat(50)));
+    console.log(`  ${chalk.cyan('Name:')}        ${info.name}`);
+    console.log(`  ${chalk.cyan('Version:')}     ${info.version}`);
+    console.log(`  ${chalk.cyan('Maintainer:')}  ${info.maintainer}`);
+    console.log();
+    
+    console.log(chalk.bold('Engines Included'));
+    console.log(chalk.gray('─'.repeat(50)));
+    info.engines.forEach(engine => {
+      console.log(`  ${chalk.green('✓')} ${engine}`);
+    });
+    console.log();
+    
+    console.log(chalk.bold('Documentation'));
+    console.log(chalk.gray('─'.repeat(50)));
+    Object.entries(info.docs).forEach(([key, value]) => {
+      console.log(`  ${chalk.cyan(key.toUpperCase().padEnd(10))} ${value}`);
+    });
+    console.log();
+    
+    console.log(chalk.bold('Privacy'));
+    console.log(chalk.gray('─'.repeat(50)));
+    console.log(`  ${chalk.green('🔒')} ${info.privacy}`);
+    console.log();
+    
+    console.log(chalk.bold('Support Development'));
+    console.log(chalk.gray('─'.repeat(50)));
+    console.log(`  ${chalk.yellow('☕')} ${info.funding}`);
+    console.log();
+  });
+
+// ============================================================================
+// COMMAND: engines
+// ============================================================================
+
+program
+  .command('engines')
+  .description('List all verification engines with status')
+  .option('--json', 'Output as JSON')
+  .action((options) => {
+    const engines = [
+      { name: 'classification', status: 'enabled', description: 'Intent, hallucination, reasoning detection' },
+      { name: 'csm6', status: 'enabled', description: 'Security checks (PII, harmful content, injection)' },
+      { name: 'hallucination', status: 'enabled', description: 'Hallucination and factuality detection' },
+      { name: 'drift', status: 'enabled', description: 'Fingerprint drift analysis' },
+      { name: 'token-rate', status: 'disabled', description: 'Token rate monitoring (static mode)' },
+      { name: 'latency', status: 'disabled', description: 'Latency tracking (no wrapping client)' }
+    ];
+    
+    if (options.json) {
+      console.log(JSON.stringify(engines, null, 2));
+      return;
+    }
+    
+    console.log(chalk.blue('\n🔧 Verification Engines\n'));
+    
+    engines.forEach(engine => {
+      const statusIcon = engine.status === 'enabled' 
+        ? chalk.green('●') 
+        : chalk.gray('○');
+      const statusText = engine.status === 'enabled'
+        ? chalk.green('enabled')
+        : chalk.gray('disabled');
+      
+      console.log(`  ${statusIcon} ${chalk.cyan(engine.name.padEnd(16))} ${statusText.padEnd(18)} ${chalk.gray(engine.description)}`);
+    });
+    console.log();
+  });
+
+// ============================================================================
+// COMMAND: explain
+// ============================================================================
+
+program
+  .command('explain <engine>')
+  .description('Explain how a verification engine works')
+  .action((engine) => {
+    const explanations: Record<string, { description: string; signals: string[] }> = {
+      'hallucination': {
+        description: 'Detects AI-generated content that may be factually incorrect or fabricated.',
+        signals: [
+          'contradiction signal - conflicting statements within response',
+          'low-confidence signal - hedging language patterns',
+          'compression signal - information density anomalies',
+          'domain mismatch signal - out-of-context claims',
+          'pattern mismatch signal - structural inconsistencies'
+        ]
+      },
+      'classification': {
+        description: 'Classifies AI output by intent, reasoning quality, and potential issues.',
+        signals: [
+          'intent classification - what the AI is trying to do',
+          'reasoning quality - logical consistency check',
+          'confidence scoring - certainty of classification',
+          'category mapping - maps to risk categories'
+        ]
+      },
+      'csm6': {
+        description: 'CSM6 security framework for comprehensive content safety.',
+        signals: [
+          'PII detection - personal identifiable information',
+          'harmful content - violence, hate, self-harm',
+          'prompt injection - manipulation attempts',
+          'jailbreak detection - bypass attempts',
+          'data leakage - sensitive information exposure'
+        ]
+      },
+      'drift': {
+        description: 'Monitors changes in AI behavior over time.',
+        signals: [
+          'fingerprint comparison - baseline vs current',
+          'distribution shift - output pattern changes',
+          'vocabulary drift - language changes',
+          'confidence drift - certainty changes'
+        ]
+      }
+    };
+    
+    const info = explanations[engine];
+    
+    if (!info) {
+      console.log(chalk.red(`\nUnknown engine: ${engine}`));
+      console.log(chalk.gray('Available engines: ' + Object.keys(explanations).join(', ')));
+      console.log();
+      return;
+    }
+    
+    console.log(chalk.blue(`\n🔍 Engine: ${engine}\n`));
+    console.log(chalk.gray('─'.repeat(50)));
+    console.log(info.description);
+    console.log();
+    console.log(chalk.bold('Detection Signals:'));
+    info.signals.forEach(signal => {
+      console.log(`  ${chalk.cyan('•')} ${signal}`);
+    });
+    console.log();
+  });
+
+// ============================================================================
+// COMMAND: doctor (hidden)
+// ============================================================================
+
+program
+  .command('doctor')
+  .description('Check system health and configuration')
+  .action(() => {
+    console.log(chalk.blue('\n🩺 llmverify Doctor\n'));
+    console.log(chalk.gray('─'.repeat(50)));
+    
+    // Node version check
+    const nodeVersion = process.version;
+    const nodeMajor = parseInt(nodeVersion.slice(1).split('.')[0]);
+    const nodeOk = nodeMajor >= 18;
+    console.log(`  ${nodeOk ? chalk.green('✓') : chalk.red('✗')} Node.js Version: ${nodeVersion} ${nodeOk ? '' : chalk.red('(requires >=18)')}`);
+    
+    // Config file check
+    const configPath = path.resolve('llmverify.config.json');
+    const configExists = fs.existsSync(configPath);
+    console.log(`  ${configExists ? chalk.green('✓') : chalk.yellow('○')} Config File: ${configExists ? 'Found' : 'Not found (optional)'}`);
+    
+    // Environment variables
+    const envVars = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY'];
+    envVars.forEach(envVar => {
+      const exists = !!process.env[envVar];
+      console.log(`  ${exists ? chalk.green('✓') : chalk.gray('○')} ${envVar}: ${exists ? 'Set' : 'Not set'}`);
+    });
+    
+    // Postinstall check
+    const postinstallPath = path.resolve(__dirname, 'postinstall.js');
+    const postinstallExists = fs.existsSync(postinstallPath);
+    console.log(`  ${postinstallExists ? chalk.green('✓') : chalk.yellow('○')} Postinstall: ${postinstallExists ? 'Present' : 'Not found'}`);
+    
+    console.log();
+    console.log(chalk.dim('Run "llmverify init" to create a config file.'));
+    console.log();
+  });
+
+// ============================================================================
+// COMMAND: version (detailed)
+// ============================================================================
+
+program
+  .command('version')
+  .description('Show detailed version information')
+  .option('--detailed', 'Show detailed system information')
+  .option('--json', 'Output as JSON')
+  .action((options) => {
+    const versionInfo = {
+      package: {
+        name: 'llmverify',
+        version: VERSION,
+        description: 'AI Output Verification Toolkit'
+      },
+      system: {
+        node: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        cwd: process.cwd()
+      },
+      engines: {
+        classification: 'enabled',
+        csm6: 'enabled',
+        hallucination: 'enabled',
+        drift: 'enabled',
+        'token-rate': 'disabled (static mode)',
+        latency: 'disabled (no client)'
+      },
+      adapters: ['openai', 'anthropic', 'groq', 'google', 'deepseek', 'mistral', 'cohere', 'local', 'custom'],
+      compliance: ['OWASP LLM Top 10', 'NIST AI RMF', 'EU AI Act', 'ISO 42001'],
+      privacy: 'Zero telemetry, 100% local processing',
+      links: {
+        repository: 'https://github.com/subodhkc/llmverify-npm',
+        issues: 'https://github.com/subodhkc/llmverify-npm/issues',
+        funding: 'https://www.buymeacoffee.com/subodhkc'
+      }
+    };
+    
+    if (options.json) {
+      console.log(JSON.stringify(versionInfo, null, 2));
+      return;
+    }
+    
+    if (options.detailed) {
+      console.log(chalk.blue('\n📦 llmverify Detailed Version Information\n'));
+      console.log(chalk.gray('═'.repeat(60)));
+      
+      console.log(chalk.bold('\nPackage'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`  ${chalk.cyan('Name:')}        ${versionInfo.package.name}`);
+      console.log(`  ${chalk.cyan('Version:')}     ${versionInfo.package.version}`);
+      console.log(`  ${chalk.cyan('Description:')} ${versionInfo.package.description}`);
+      
+      console.log(chalk.bold('\nSystem'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`  ${chalk.cyan('Node.js:')}     ${versionInfo.system.node}`);
+      console.log(`  ${chalk.cyan('Platform:')}    ${versionInfo.system.platform}`);
+      console.log(`  ${chalk.cyan('Architecture:')} ${versionInfo.system.arch}`);
+      console.log(`  ${chalk.cyan('Working Dir:')} ${versionInfo.system.cwd}`);
+      
+      console.log(chalk.bold('\nEngines'));
+      console.log(chalk.gray('─'.repeat(60)));
+      Object.entries(versionInfo.engines).forEach(([engine, status]) => {
+        const icon = status === 'enabled' ? chalk.green('●') : chalk.gray('○');
+        console.log(`  ${icon} ${chalk.cyan(engine.padEnd(16))} ${status}`);
+      });
+      
+      console.log(chalk.bold('\nAdapters'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`  ${versionInfo.adapters.join(', ')}`);
+      
+      console.log(chalk.bold('\nCompliance Frameworks'));
+      console.log(chalk.gray('─'.repeat(60)));
+      versionInfo.compliance.forEach(framework => {
+        console.log(`  ${chalk.green('✓')} ${framework}`);
+      });
+      
+      console.log(chalk.bold('\nPrivacy'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`  ${chalk.green('🔒')} ${versionInfo.privacy}`);
+      
+      console.log(chalk.bold('\nLinks'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`  ${chalk.cyan('Repository:')} ${versionInfo.links.repository}`);
+      console.log(`  ${chalk.cyan('Issues:')}     ${versionInfo.links.issues}`);
+      console.log(`  ${chalk.cyan('Funding:')}    ${versionInfo.links.funding}`);
+      
+      console.log();
+    } else {
+      console.log(`llmverify v${VERSION}`);
+    }
+  });
+
+// ============================================================================
+// COMMAND: tutorial
+// ============================================================================
+
+program
+  .command('tutorial')
+  .description('Show usage examples and quick start guide')
+  .action(() => {
+    console.log(chalk.blue('\n📚 llmverify Quick Start Guide\n'));
+    console.log(chalk.gray('═'.repeat(60)));
+    console.log();
+    
+    console.log(chalk.bold('1. Basic Verification'));
+    console.log(chalk.gray('   Verify AI output directly:'));
+    console.log(chalk.cyan('   $ npx llmverify verify "Your AI response here"'));
+    console.log();
+    
+    console.log(chalk.bold('2. Verify from File'));
+    console.log(chalk.gray('   Verify content from a file:'));
+    console.log(chalk.cyan('   $ npx llmverify verify --file response.txt'));
+    console.log();
+    
+    console.log(chalk.bold('3. JSON Output'));
+    console.log(chalk.gray('   Get results as JSON for programmatic use:'));
+    console.log(chalk.cyan('   $ npx llmverify verify "content" --output json'));
+    console.log();
+    
+    console.log(chalk.bold('4. Initialize Config'));
+    console.log(chalk.gray('   Create a config file for your project:'));
+    console.log(chalk.cyan('   $ npx llmverify init'));
+    console.log();
+    
+    console.log(chalk.bold('5. Check Engines'));
+    console.log(chalk.gray('   See available verification engines:'));
+    console.log(chalk.cyan('   $ npx llmverify engines'));
+    console.log();
+    
+    console.log(chalk.bold('6. Learn About Engines'));
+    console.log(chalk.gray('   Understand how detection works:'));
+    console.log(chalk.cyan('   $ npx llmverify explain hallucination'));
+    console.log();
+    
+    console.log(chalk.bold('7. System Health'));
+    console.log(chalk.gray('   Verify your setup:'));
+    console.log(chalk.cyan('   $ npx llmverify doctor'));
+    console.log();
+    
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(`For more help: ${chalk.cyan('npx llmverify --help')}`);
+    console.log(`Documentation: ${chalk.cyan('https://github.com/subodhkc/llmverify-npm')}`);
+    console.log();
+  });
+
+// ============================================================================
+// COMMAND: run (Master command with presets)
+// ============================================================================
+
+import { run as coreRun, PRESETS, PresetMode, CoreRunResult } from './core';
+
+program
+  .command('run')
+  .description('Run all verification engines with preset configuration (dev/prod/strict/fast/ci)')
+  .argument('[content]', 'Content to verify (or use --file)')
+  .option('-f, --file <path>', 'Read content from file')
+  .option('-p, --preset <mode>', 'Preset mode: dev, prod, strict, fast, ci', 'dev')
+  .option('--prompt <text>', 'Original prompt for classification')
+  .option('--input <text>', 'User input to check for injection')
+  .option('-o, --output <format>', 'Output format: text, json, summary', 'text')
+  .option('--parallel', 'Run engines in parallel (default: true)', true)
+  .option('--no-parallel', 'Run engines sequentially')
+  .action(async (content: string | undefined, options) => {
+    try {
+      // Get content
+      let inputContent = content;
+      
+      if (options.file) {
+        const filePath = path.resolve(options.file);
+        if (!fs.existsSync(filePath)) {
+          console.error(chalk.red(`File not found: ${filePath}`));
+          process.exit(1);
+        }
+        inputContent = fs.readFileSync(filePath, 'utf-8');
+      }
+      
+      if (!inputContent) {
+        console.error(chalk.red('No content provided. Use --file or provide content as argument.'));
+        process.exit(1);
+      }
+
+      const preset = options.preset as PresetMode;
+      if (!['dev', 'prod', 'strict', 'fast', 'ci'].includes(preset)) {
+        console.error(chalk.red(`Invalid preset: ${preset}. Use: dev, prod, strict, fast, ci`));
+        process.exit(1);
+      }
+
+      console.log(chalk.blue(`\n🚀 Running llmverify with ${chalk.bold(preset.toUpperCase())} preset...\n`));
+
+      const startTime = Date.now();
+      const result = await coreRun({
+        content: inputContent,
+        prompt: options.prompt,
+        userInput: options.input,
+        preset,
+        parallel: options.parallel
+      });
+
+      if (options.output === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      } else if (options.output === 'summary') {
+        printRunSummary(result);
+      } else {
+        printRunResult(result);
+      }
+
+      // Exit code based on risk level
+      const exitCodes: Record<string, number> = {
+        low: 0,
+        moderate: 1,
+        high: 2,
+        critical: 2
+      };
+      
+      process.exit(exitCodes[result.verification.risk.level] || 0);
+
+    } catch (error) {
+      console.error(chalk.red(`\nError: ${(error as Error).message}`));
+      process.exit(1);
+    }
+  });
+
+function printRunResult(result: CoreRunResult): void {
+  const riskColors: Record<string, typeof chalk.green> = {
+    low: chalk.green,
+    moderate: chalk.yellow,
+    high: chalk.red,
+    critical: chalk.bgRed.white
+  };
+
+  // Header
+  console.log(chalk.gray('═'.repeat(60)));
+  console.log(chalk.bold('📊 VERIFICATION RESULTS'));
+  console.log(chalk.gray('═'.repeat(60)));
+  console.log();
+
+  // Risk Assessment
+  const riskColor = riskColors[result.verification.risk.level] || chalk.white;
+  console.log(chalk.bold('Risk Assessment'));
+  console.log(chalk.gray('─'.repeat(40)));
+  console.log(`  Level:  ${riskColor(result.verification.risk.level.toUpperCase())}`);
+  console.log(`  Score:  ${(result.verification.risk.overall * 100).toFixed(1)}%`);
+  console.log(`  Action: ${result.verification.risk.action}`);
+  console.log();
+
+  // Classification (if available)
+  if (result.classification) {
+    console.log(chalk.bold('Classification'));
+    console.log(chalk.gray('─'.repeat(40)));
+    console.log(`  Intent:             ${chalk.cyan(result.classification.intent)}`);
+    console.log(`  Hallucination Risk: ${getHallucinationColor(result.classification.hallucinationLabel)(result.classification.hallucinationLabel)} (${(result.classification.hallucinationRisk * 100).toFixed(0)}%)`);
+    if (result.classification.isJson) {
+      console.log(`  JSON Valid:         ${chalk.green('✓')}`);
+    }
+    console.log();
+  }
+
+  // Input Safety (if checked)
+  if (result.inputSafety) {
+    console.log(chalk.bold('Input Safety'));
+    console.log(chalk.gray('─'.repeat(40)));
+    const safeIcon = result.inputSafety.safe ? chalk.green('✓ Safe') : chalk.red('✗ Unsafe');
+    console.log(`  Status:   ${safeIcon}`);
+    console.log(`  Findings: ${result.inputSafety.injectionFindings.length}`);
+    console.log();
+  }
+
+  // PII Check
+  if (result.piiCheck) {
+    console.log(chalk.bold('PII Detection'));
+    console.log(chalk.gray('─'.repeat(40)));
+    const piiIcon = result.piiCheck.hasPII ? chalk.yellow('⚠ Found') : chalk.green('✓ None');
+    console.log(`  Status: ${piiIcon}`);
+    console.log(`  Count:  ${result.piiCheck.piiCount}`);
+    console.log();
+  }
+
+  // Harmful Content
+  if (result.harmfulCheck) {
+    console.log(chalk.bold('Harmful Content'));
+    console.log(chalk.gray('─'.repeat(40)));
+    const harmIcon = result.harmfulCheck.hasHarmful ? chalk.red('✗ Found') : chalk.green('✓ None');
+    console.log(`  Status:   ${harmIcon}`);
+    console.log(`  Findings: ${result.harmfulCheck.findings.length}`);
+    console.log();
+  }
+
+  // Meta
+  console.log(chalk.gray('─'.repeat(60)));
+  console.log(chalk.dim(`Preset: ${result.meta.preset} | Engines: ${result.meta.enginesRun.join(', ')}`));
+  console.log(chalk.dim(`Latency: ${result.meta.totalLatencyMs}ms | ${result.meta.timestamp}`));
+  console.log();
+}
+
+function printRunSummary(result: CoreRunResult): void {
+  const riskColors: Record<string, typeof chalk.green> = {
+    low: chalk.green,
+    moderate: chalk.yellow,
+    high: chalk.red,
+    critical: chalk.bgRed.white
+  };
+  const riskColor = riskColors[result.verification.risk.level] || chalk.white;
+
+  console.log(`${riskColor('●')} Risk: ${riskColor(result.verification.risk.level.toUpperCase())} | Action: ${result.verification.risk.action} | ${result.meta.totalLatencyMs}ms`);
+  
+  const checks: string[] = [];
+  if (result.inputSafety) checks.push(result.inputSafety.safe ? '✓input' : '✗input');
+  if (result.piiCheck) checks.push(result.piiCheck.hasPII ? '⚠pii' : '✓pii');
+  if (result.harmfulCheck) checks.push(result.harmfulCheck.hasHarmful ? '✗harm' : '✓harm');
+  if (result.classification) checks.push(`intent:${result.classification.intent}`);
+  
+  if (checks.length > 0) {
+    console.log(chalk.dim(`  ${checks.join(' | ')}`));
+  }
+}
+
+function getHallucinationColor(label: string): typeof chalk.green {
+  switch (label) {
+    case 'low': return chalk.green;
+    case 'medium': return chalk.yellow;
+    case 'high': return chalk.red;
+    default: return chalk.white;
+  }
+}
+
+// ============================================================================
+// COMMAND: wizard (Interactive setup)
+// ============================================================================
+
+program
+  .command('wizard')
+  .description('Interactive setup wizard for first-time configuration')
+  .action(async () => {
+    console.log(chalk.blue(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ${chalk.bold('🧙 llmverify Setup Wizard')}                                                 ║
+║                                                                              ║
+║   This wizard will help you configure llmverify for your project.            ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+`));
+
+    // Since we can't use readline in a simple way, provide guided instructions
+    console.log(chalk.bold('\n📋 Step 1: Choose Your Preset\n'));
+    console.log(chalk.gray('─'.repeat(60)));
+    
+    const presetTable = new Table({
+      head: ['Preset', 'Use Case', 'Speed', 'Thoroughness'],
+      style: { head: ['cyan'] }
+    });
+    
+    presetTable.push(
+      [chalk.green('dev'), 'Local development & testing', '●●●○○', '●●●●○'],
+      [chalk.yellow('prod'), 'Production APIs (low latency)', '●●●●●', '●●●○○'],
+      [chalk.red('strict'), 'High-stakes, compliance', '●●○○○', '●●●●●'],
+      [chalk.cyan('fast'), 'High-throughput pipelines', '●●●●●', '●●○○○'],
+      [chalk.magenta('ci'), 'CI/CD pipelines', '●●●●○', '●●●●○']
+    );
+    
+    console.log(presetTable.toString());
+    console.log();
+
+    console.log(chalk.bold('\n📋 Step 2: Quick Start Commands\n'));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log();
+    console.log(chalk.dim('  # Run with dev preset (recommended for starting)'));
+    console.log(chalk.green('  npx llmverify run "Your AI output" --preset dev'));
+    console.log();
+    console.log(chalk.dim('  # Run with production preset'));
+    console.log(chalk.green('  npx llmverify run "Your AI output" --preset prod'));
+    console.log();
+    console.log(chalk.dim('  # Run with classification (provide original prompt)'));
+    console.log(chalk.green('  npx llmverify run "AI response" --prompt "Original question" --preset dev'));
+    console.log();
+    console.log(chalk.dim('  # Check user input for injection attacks'));
+    console.log(chalk.green('  npx llmverify run "AI response" --input "User message" --preset strict'));
+    console.log();
+    console.log(chalk.dim('  # Output as JSON for programmatic use'));
+    console.log(chalk.green('  npx llmverify run "Your AI output" --preset ci --output json'));
+    console.log();
+
+    console.log(chalk.bold('\n📋 Step 3: Initialize Config File\n'));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log();
+    console.log(chalk.dim('  Create a config file for persistent settings:'));
+    console.log(chalk.green('  npx llmverify init'));
+    console.log();
+    console.log(chalk.dim('  This creates llmverify.config.json in your project root.'));
+    console.log();
+
+    console.log(chalk.bold('\n📋 Step 4: Programmatic Usage\n'));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log();
+    console.log(chalk.dim('  // Quick verification with preset'));
+    console.log(chalk.cyan(`  import { run, devVerify, prodVerify } from 'llmverify';`));
+    console.log();
+    console.log(chalk.dim('  // Using the run function with options'));
+    console.log(chalk.white(`  const result = await run({`));
+    console.log(chalk.white(`    content: aiOutput,`));
+    console.log(chalk.white(`    prompt: originalPrompt,`));
+    console.log(chalk.white(`    preset: 'dev'`));
+    console.log(chalk.white(`  });`));
+    console.log();
+    console.log(chalk.dim('  // Quick helpers'));
+    console.log(chalk.white(`  const result = await devVerify(aiOutput, prompt);`));
+    console.log(chalk.white(`  const result = await prodVerify(aiOutput);`));
+    console.log(chalk.white(`  const result = await strictVerify(aiOutput, prompt);`));
+    console.log();
+
+    console.log(chalk.bold('\n📋 Step 5: Verify Setup\n'));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log();
+    console.log(chalk.dim('  Run the doctor command to verify your setup:'));
+    console.log(chalk.green('  npx llmverify doctor'));
+    console.log();
+
+    console.log(chalk.bold('\n📚 Additional Resources\n'));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(`  ${chalk.cyan('Documentation:')}    https://github.com/subodhkc/llmverify-npm#readme`);
+    console.log(`  ${chalk.cyan('CLI Reference:')}    docs/CLI-REFERENCE.md`);
+    console.log(`  ${chalk.cyan('Troubleshooting:')} docs/TROUBLESHOOTING.md`);
+    console.log(`  ${chalk.cyan('Getting Started:')} docs/GETTING-STARTED.md`);
+    console.log();
+
+    console.log(chalk.green.bold('\n✓ Wizard complete! You\'re ready to use llmverify.\n'));
+    console.log(chalk.dim('Run "npx llmverify run --help" for more options.\n'));
+  });
+
+// ============================================================================
+// COMMAND: presets (List available presets)
+// ============================================================================
+
+program
+  .command('presets')
+  .description('List available preset configurations')
+  .option('--json', 'Output as JSON')
+  .action((options) => {
+    if (options.json) {
+      console.log(JSON.stringify(PRESETS, null, 2));
+      return;
+    }
+
+    console.log(chalk.blue('\n⚙️  Available Presets\n'));
+    console.log(chalk.gray('═'.repeat(60)));
+    console.log();
+
+    const presetInfo = [
+      {
+        name: 'dev',
+        description: 'Development mode - balanced, informative output',
+        useCase: 'Local development and testing',
+        engines: ['hallucination', 'consistency', 'jsonValidator', 'csm6'],
+        speed: '●●●○○',
+        thoroughness: '●●●●○'
+      },
+      {
+        name: 'prod',
+        description: 'Production mode - optimized for speed',
+        useCase: 'Production APIs with latency requirements',
+        engines: ['jsonValidator', 'csm6'],
+        speed: '●●●●●',
+        thoroughness: '●●●○○'
+      },
+      {
+        name: 'strict',
+        description: 'Strict mode - all engines, maximum scrutiny',
+        useCase: 'High-stakes content, compliance requirements',
+        engines: ['hallucination', 'consistency', 'jsonValidator', 'csm6 (all checks)'],
+        speed: '●●○○○',
+        thoroughness: '●●●●●'
+      },
+      {
+        name: 'fast',
+        description: 'Fast mode - minimal checks, maximum speed',
+        useCase: 'High-throughput scenarios',
+        engines: ['csm6 (security only)'],
+        speed: '●●●●●',
+        thoroughness: '●●○○○'
+      },
+      {
+        name: 'ci',
+        description: 'CI mode - optimized for CI/CD pipelines',
+        useCase: 'Automated testing and deployment',
+        engines: ['hallucination', 'consistency', 'jsonValidator', 'csm6'],
+        speed: '●●●●○',
+        thoroughness: '●●●●○'
+      }
+    ];
+
+    presetInfo.forEach(preset => {
+      const nameColors: Record<string, typeof chalk.green> = {
+        dev: chalk.green,
+        prod: chalk.yellow,
+        strict: chalk.red,
+        fast: chalk.cyan,
+        ci: chalk.magenta
+      };
+      const nameColor = nameColors[preset.name] || chalk.white;
+
+      console.log(`${nameColor.bold(preset.name.toUpperCase())}`);
+      console.log(chalk.gray('─'.repeat(40)));
+      console.log(`  ${chalk.dim('Description:')} ${preset.description}`);
+      console.log(`  ${chalk.dim('Use Case:')}    ${preset.useCase}`);
+      console.log(`  ${chalk.dim('Speed:')}       ${preset.speed}`);
+      console.log(`  ${chalk.dim('Thoroughness:')} ${preset.thoroughness}`);
+      console.log(`  ${chalk.dim('Engines:')}     ${preset.engines.join(', ')}`);
+      console.log();
+    });
+
+    console.log(chalk.dim('Usage: npx llmverify run "content" --preset <name>'));
+    console.log();
+  });
+
+// ============================================================================
+// COMMAND: benchmark
+// ============================================================================
+
+program
+  .command('benchmark')
+  .description('Benchmark verification latency across all presets')
+  .option('-i, --iterations <n>', 'Number of iterations per preset', '3')
+  .option('-c, --content <text>', 'Custom content to benchmark', 'The capital of France is Paris. This is a test response from an AI assistant.')
+  .option('--json', 'Output results as JSON')
+  .action(async (options) => {
+    const iterations = parseInt(options.iterations, 10);
+    const content = options.content;
+    const presetNames: PresetMode[] = ['fast', 'prod', 'dev', 'ci', 'strict'];
+
+    console.log(chalk.blue(`\n⏱️  Benchmarking llmverify (${iterations} iterations per preset)\n`));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(chalk.dim(`Content: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log();
+
+    const results: Array<{
+      preset: string;
+      avgMs: number;
+      minMs: number;
+      maxMs: number;
+      iterations: number;
+    }> = [];
+
+    for (const preset of presetNames) {
+      const times: number[] = [];
+      
+      process.stdout.write(chalk.cyan(`  ${preset.padEnd(8)}`));
+      
+      for (let i = 0; i < iterations; i++) {
+        const start = Date.now();
+        await coreRun({ content, preset });
+        const elapsed = Date.now() - start;
+        times.push(elapsed);
+        process.stdout.write(chalk.dim('.'));
+      }
+
+      const avg = times.reduce((a, b) => a + b, 0) / times.length;
+      const min = Math.min(...times);
+      const max = Math.max(...times);
+
+      results.push({ preset, avgMs: avg, minMs: min, maxMs: max, iterations });
+
+      // Color based on speed
+      const avgColor = avg < 20 ? chalk.green : avg < 50 ? chalk.yellow : chalk.red;
+      console.log(` ${avgColor(`${avg.toFixed(1)}ms`)} avg (${min}-${max}ms)`);
+    }
+
+    console.log();
+
+    if (options.json) {
+      console.log(JSON.stringify({ benchmarks: results, content: content.substring(0, 100) }, null, 2));
+    } else {
+      // Summary table
+      console.log(chalk.bold('📊 Summary'));
+      console.log(chalk.gray('─'.repeat(60)));
+      
+      const table = new Table({
+        head: ['Preset', 'Avg (ms)', 'Min (ms)', 'Max (ms)', 'Speed'],
+        style: { head: ['cyan'] }
+      });
+
+      results.forEach(r => {
+        const speedBars = r.avgMs < 15 ? '●●●●●' : r.avgMs < 25 ? '●●●●○' : r.avgMs < 40 ? '●●●○○' : r.avgMs < 60 ? '●●○○○' : '●○○○○';
+        const avgColor = r.avgMs < 20 ? chalk.green : r.avgMs < 50 ? chalk.yellow : chalk.red;
+        table.push([
+          r.preset,
+          avgColor(r.avgMs.toFixed(1)),
+          r.minMs.toString(),
+          r.maxMs.toString(),
+          speedBars
+        ]);
+      });
+
+      console.log(table.toString());
+      console.log();
+      console.log(chalk.dim('Tip: Use --preset fast for high-throughput, --preset strict for compliance'));
+      console.log();
+    }
+  });
+
+// ============================================================================
+// COMMAND: adapters
+// ============================================================================
+
+program
+  .command('adapters')
+  .description('List available provider adapters')
+  .action(() => {
+    console.log(chalk.blue('\n🔌 Available Adapters\n'));
+    
+    const adapters = [
+      { name: 'openai', status: 'available', description: 'OpenAI GPT models' },
+      { name: 'anthropic', status: 'available', description: 'Anthropic Claude models' },
+      { name: 'langchain', status: 'available', description: 'LangChain integration' },
+      { name: 'vercel-ai', status: 'planned', description: 'Vercel AI SDK' },
+      { name: 'ollama', status: 'planned', description: 'Local Ollama models' }
+    ];
+    
+    adapters.forEach(adapter => {
+      const statusIcon = adapter.status === 'available' 
+        ? chalk.green('●') 
+        : chalk.yellow('○');
+      const statusText = adapter.status === 'available'
+        ? chalk.green('available')
+        : chalk.yellow('planned');
+      
+      console.log(`  ${statusIcon} ${chalk.cyan(adapter.name.padEnd(12))} ${statusText.padEnd(14)} ${chalk.gray(adapter.description)}`);
+    });
     console.log();
   });
 

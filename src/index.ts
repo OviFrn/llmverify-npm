@@ -230,3 +230,24 @@ export type {
   ClassificationPolicy,
   ClassificationResult
 } from './engines/classification';
+
+// Core Module - Preset configurations and master run function
+export {
+  run,
+  devVerify,
+  prodVerify,
+  strictVerify,
+  fastVerify,
+  ciVerify,
+  createPipeline,
+  PRESETS,
+  presets
+} from './core';
+
+// Core Types
+export type {
+  PresetMode,
+  CoreRunResult,
+  CoreRunOptions,
+  PipelineStep
+} from './core';

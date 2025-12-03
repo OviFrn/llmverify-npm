@@ -3,10 +3,11 @@
 > Open-source LLM output monitoring, risk scoring, and classification for Node.js.
 
 [![npm version](https://badge.fury.io/js/llmverify.svg)](https://www.npmjs.com/package/llmverify)
+[![CI](https://github.com/subodhkc/llmverify-npm/actions/workflows/llmverify.yml/badge.svg)](https://github.com/subodhkc/llmverify-npm/actions/workflows/llmverify.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/npm/dm/llmverify.svg)](https://www.npmjs.com/package/llmverify)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-360%20Passing-green.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-546%20Passing-green.svg)]()
 [![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen.svg)]()
 
 ---
@@ -16,7 +17,25 @@
 | Guide | Description |
 |-------|-------------|
 | [Getting Started](docs/GETTING-STARTED.md) | Beginner-friendly guide for students and newcomers |
+| [AI Integration](docs/AI-INTEGRATION.md) | **For AI agents** - IDE imports, copilot patterns |
 | [For Developers](docs/FOR-DEVELOPERS.md) | Integration patterns, configuration, and production usage |
+
+### For AI Assistants / Copilots
+
+```typescript
+// Essential import for AI verification
+import { run, isInputSafe, redactPII } from 'llmverify';
+
+const result = await run({
+  content: aiResponse,
+  prompt: originalPrompt,
+  preset: 'prod'  // dev | prod | strict | fast | ci
+});
+
+if (result.verification.risk.level === 'critical') {
+  // Block this response
+}
+```
 
 ---
 
@@ -202,7 +221,32 @@ const result = classify(prompt, output, {
 
 ## API Reference
 
-### 1. Full Verification (Recommended)
+### 1. Core Module with Presets (Recommended)
+
+```typescript
+import { run, devVerify, prodVerify, strictVerify } from 'llmverify';
+
+// ★ Master run function with presets
+const result = await run({
+  content: aiOutput,
+  prompt: originalPrompt,    // Optional: enables classification
+  userInput: userMessage,    // Optional: checks for injection
+  preset: 'dev'              // dev | prod | strict | fast | ci
+});
+
+console.log(result.verification.risk.level);  // "low" | "moderate" | "high" | "critical"
+console.log(result.classification?.intent);   // Intent detection
+console.log(result.inputSafety?.safe);        // Input safety check
+console.log(result.piiCheck?.hasPII);         // PII detection
+console.log(result.meta.totalLatencyMs);      // Performance
+
+// Quick helpers for common presets
+const devResult = await devVerify(aiOutput, prompt);
+const prodResult = await prodVerify(aiOutput);
+const strictResult = await strictVerify(aiOutput, prompt);
+```
+
+### 2. Full Verification
 
 ```typescript
 import { verify } from 'llmverify';
@@ -376,21 +420,55 @@ export default async function handler(req, res) {
 
 ## CLI Usage
 
+### Quick Start Commands
+
 ```bash
-# Basic verification — most common usage
-npx llmverify "Your AI output here"
+# ★ Interactive setup wizard (first-time users)
+npx llmverify wizard
+
+# ★ Master command with presets (recommended)
+npx llmverify run "Your AI output" --preset dev      # Development mode
+npx llmverify run "Your AI output" --preset prod     # Production (fast)
+npx llmverify run "Your AI output" --preset strict   # Maximum scrutiny
+npx llmverify run "Your AI output" --preset ci       # CI/CD optimized
+
+# Basic verification
+npx llmverify verify "Your AI output here"
 
 # From file
-npx llmverify --file output.txt
+npx llmverify verify --file output.txt
 
 # JSON validation
-npx llmverify --json '{"status": "ok"}'
-
-# Show privacy guarantees
-npx llmverify privacy
+npx llmverify verify --json '{"status": "ok"}'
 ```
 
-**Exit codes** (CI/CD integration):
+### All CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `run` | ★ Master command - run all engines with presets |
+| `wizard` | ★ Interactive setup wizard |
+| `verify` | Run multi-engine verification |
+| `presets` | List available preset configurations |
+| `benchmark` | Benchmark latency across presets |
+| `engines` | List all verification engines |
+| `doctor` | Check system health |
+| `init` | Initialize config file |
+| `privacy` | Show privacy guarantees |
+| `tutorial` | Show usage examples |
+
+### Presets
+
+| Preset | Use Case | Speed |
+|--------|----------|-------|
+| `dev` | Local development & testing | ●●●○○ |
+| `prod` | Production APIs (low latency) | ●●●●● |
+| `strict` | High-stakes, compliance | ●●○○○ |
+| `fast` | High-throughput pipelines | ●●●●● |
+| `ci` | CI/CD pipelines | ●●●●○ |
+
+### Exit Codes (CI/CD)
+
 - `0`: Low risk (allow)
 - `1`: Moderate risk (review)
 - `2`: High/Critical risk (block)
