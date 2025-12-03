@@ -14,6 +14,8 @@ playwright.config.ts
 local/
 demo/
 playwright-report/
+prompts/
+recipes/
 
 # Test coverage
 coverage/
