@@ -1,0 +1,24 @@
+# Source files (we ship dist/)
+src/
+tests/
+
+# Config files
+tsconfig.json
+jest.config.js
+.eslintrc.js
+playwright.config.ts
+
+# Development files
+.gitignore
+.github/
+local/
+demo/
+playwright-report/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.log
+*.tgz
