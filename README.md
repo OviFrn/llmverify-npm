@@ -810,3 +810,9 @@ MIT License. See [LICENSE](LICENSE) for details.
 llmverify - LLM output monitoring and classification for Node.js.
 
 Built for privacy. Designed for production.
+
+---
+
+**AI Caliber is the King, Everything else Negotiable**
+
+Maintained by KingCaliber Labs (Author KC)
