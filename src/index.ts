@@ -309,13 +309,17 @@ export {
   SECURITY_LIMITS
 } from './security/validators';
 
-// Badge Generator (v1.4.0)
+// Badge generator
 export {
   generateBadgeSignature,
   verifyBadgeSignature,
   generateBadgeMarkdown,
   generateBadgeHTML,
-  generateBadgeForProject,
-  extractBadgeVerification
+  extractBadgeVerification,
+  generateBadgeForProject
 } from './badge/generator';
 export type { BadgeConfig, BadgeVerification } from './badge/generator';
+
+// IDE Extension
+export { LLMVerifyIDE, createIDEExtension } from './ide-extension';
+export type { VerificationResult } from './ide-extension';

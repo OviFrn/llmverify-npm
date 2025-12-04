@@ -38,3 +38,21 @@ local/
 playwright-report/
 demo/recordings/
 prompts/
+
+# Internal documentation (local only, not for GitHub)
+*-COMPLETE.md
+*-SETUP.md
+*-SUMMARY.md
+*-PROGRESS.md
+*-HANDOFF.md
+DEPLOYMENT-*.md
+SESSION-*.md
+VERIFICATION-*.md
+IMPLEMENTATION-*.md
+FINAL-*.md
+IDE-SETUP-*.md
+WINDSURF-*.md
+test-*.ps1
+verify.ps1
+check-ai.ps1
+monitor-*.ps1
