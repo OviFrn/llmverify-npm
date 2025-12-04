@@ -32,8 +32,8 @@ echo "🧪 Running tests..."
 npm test
 
 # Bump version
-echo "📦 Bumping version ($VERSION_TYPE)..."
-npm version $VERSION_TYPE -m "chore: release v%s"
+echo "📦 Bumping version ($VERSION_TYPE)...
+"npm version $VERSION_TYPE -m "chore: release v%s"
 
 # Get new version
 NEW_VERSION=$(node -p "require('./package.json').version")
