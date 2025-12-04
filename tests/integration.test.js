@@ -18,18 +18,21 @@ describe('Integration Tests', () => {
       : `lsof -ti:${SERVER_PORT} | xargs kill -9 2>/dev/null || true`;
     
     require('child_process').exec(killCmd, () => {
-      // Start server
-      serverProcess = spawn('node', [path.join(__dirname, '../start-server.js')], {
-        stdio: 'pipe',
-        env: { ...process.env, NODE_ENV: 'test' }
-      });
-
-      // Wait for server to start
+      // Wait for port to be released
       setTimeout(() => {
-        done();
-      }, 3000);
+        // Start server
+        serverProcess = spawn('node', [path.join(__dirname, '../start-server.js')], {
+          stdio: 'pipe',
+          env: { ...process.env, NODE_ENV: 'test' }
+        });
+
+        // Wait for server to start
+        setTimeout(() => {
+          done();
+        }, 5000);
+      }, 2000);
     });
-  }, 10000);
+  }, 20000);
 
   afterAll((done) => {
     if (serverProcess) {

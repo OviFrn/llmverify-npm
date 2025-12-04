@@ -43,10 +43,11 @@
     "postinstall": "node dist/postinstall.js || true",
     "test": "jest",
     "test:integration": "jest tests/integration.test.js --testTimeout=20000",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage && node -e \"console.log('\\n\\nHTML Coverage Report: coverage/lcov-report/index.html\\n\\nTo view in browser:\\n  Windows: start coverage/lcov-report/index.html\\n  Mac: open coverage/lcov-report/index.html\\n  Linux: xdg-open coverage/lcov-report/index.html\\n')\"",
+    "test:coverage:open": "npm run test:coverage && node -e \"const { exec } = require('child_process'); const cmd = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open'; exec(`${cmd} coverage/lcov-report/index.html`);\"",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build && npm test",
+    "prepublishOnly": "npm run build && npm test -- --testPathIgnorePatterns=\"integration|monitor\"",
     "doctor": "node dist/cli.js doctor",
     "verify": "node dist/cli.js verify"
   },

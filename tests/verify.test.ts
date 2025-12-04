@@ -56,8 +56,8 @@ describe('verify', () => {
     });
     
     it('should reject content exceeding max length', async () => {
-      const longContent = 'a'.repeat(20000);
-      await expect(verify({ content: longContent })).rejects.toThrow('exceeds tier limit');
+      const longContent = 'a'.repeat(2000000); // 2MB - exceeds 1MB limit
+      await expect(verify({ content: longContent })).rejects.toThrow('exceeds maximum size');
     });
   });
   

@@ -331,7 +331,7 @@ Coverage report: coverage/lcov-report/index.html
 # Windows
 start coverage/lcov-report/index.html
 
-# Mac
+# Maccv
 open coverage/lcov-report/index.html
 
 # Linux
