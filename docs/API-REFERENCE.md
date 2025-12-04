@@ -6,6 +6,7 @@ Complete programmatic API documentation for llmverify v1.3.0+
 
 - [Installation](#installation)
 - [Core API](#core-api)
+- [Configuration Management](#configuration-management)
 - [Verification Functions](#verification-functions)
 - [Security Functions](#security-functions)
 - [Classification Functions](#classification-functions)
@@ -104,6 +105,110 @@ const result = await run({
   prompt: 'Original prompt',
   preset: 'prod'
 });
+```
+
+---
+
+## Configuration Management
+
+### `loadConfig(runtimeConfig?: Partial<Config>): Config`
+
+Load configuration from multiple sources with priority: runtime > env > file > defaults.
+
+**Sources (in priority order):**
+1. Runtime config passed as parameter
+2. Environment variables (`LLMVERIFY_*`)
+3. Config file (`llmverify.config.json`)
+4. Default configuration
+
+**Example:**
+
+```typescript
+import { loadConfig } from 'llmverify';
+
+// Load with all sources
+const config = loadConfig();
+
+// Load with runtime overrides
+const config = loadConfig({
+  tier: 'professional',
+  engines: {
+    hallucination: { enabled: true }
+  }
+});
+```
+
+---
+
+### `loadConfigFromEnv(): Partial<Config>`
+
+Load configuration from environment variables.
+
+**Supported Environment Variables:**
+- `LLMVERIFY_TIER` - Tier level (free, team, professional, enterprise)
+- `LLMVERIFY_API_KEY` - API key for paid tiers
+- `LLMVERIFY_TELEMETRY` - Enable telemetry (true/false)
+- `LLMVERIFY_NETWORK_REQUESTS` - Allow network requests (true/false)
+
+**Example:**
+
+```bash
+export LLMVERIFY_TIER=professional
+export LLMVERIFY_API_KEY=your-api-key
+```
+
+```typescript
+import { loadConfigFromEnv } from 'llmverify';
+
+const envConfig = loadConfigFromEnv();
+console.log(envConfig.tier); // "professional"
+```
+
+---
+
+### `loadConfigFile(searchPath?: string): Partial<Config> | null`
+
+Load configuration from `llmverify.config.json` file.
+
+Searches for config file in current directory.
+
+**Returns:** Config object or `null` if not found
+
+**Example:**
+
+```typescript
+import { loadConfigFile } from 'llmverify';
+
+const fileConfig = loadConfigFile();
+if (fileConfig) {
+  console.log('Config loaded from file');
+}
+```
+
+---
+
+### `createDefaultConfigFile(targetPath?: string): string`
+
+Create a default `llmverify.config.json` file.
+
+**Parameters:**
+- `targetPath` - Directory to create config file (default: current directory)
+
+**Returns:** Path to created config file
+
+**Example:**
+
+```typescript
+import { createDefaultConfigFile } from 'llmverify';
+
+const configPath = createDefaultConfigFile();
+console.log(`Config created at: ${configPath}`);
+```
+
+**CLI Usage:**
+
+```bash
+npx llmverify init
 ```
 
 ---

@@ -19,6 +19,7 @@ import { ConsistencyEngine } from './engines/consistency';
 import { JSONValidatorEngine } from './engines/json-validator';
 import { CSM6Baseline } from './csm6/baseline';
 import { RiskScoringEngine } from './engines/risk-scoring';
+import { loadConfig } from './config';
 
 export interface VerifyOptions {
   content: string;
@@ -53,8 +54,9 @@ export async function verify(options: VerifyOptions): Promise<VerifyResult> {
   const startTime = Date.now();
   const verificationId = uuidv4();
   
-  // Merge config with tier limits
-  const config = mergeConfig(options.config);
+  // Load config from file/env, then merge with runtime options
+  const baseConfig = loadConfig(options.config);
+  const config = mergeConfig(baseConfig);
   
   // CRITICAL: Validate privacy compliance
   validatePrivacyCompliance(config);

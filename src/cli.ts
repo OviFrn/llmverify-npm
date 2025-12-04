@@ -163,15 +163,22 @@ program
       return;
     }
     
-    const config = {
-      tier: 'free',
-      engines: DEFAULT_CONFIG.engines,
-      performance: DEFAULT_CONFIG.performance,
-      output: DEFAULT_CONFIG.output
-    };
-    
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    console.log(chalk.green('Created llmverify.config.json'));
+    try {
+      const { createDefaultConfigFile } = require('./config');
+      createDefaultConfigFile();
+      console.log(chalk.green('✓ Created llmverify.config.json'));
+      console.log(chalk.dim('  Edit this file to customize your verification settings'));
+    } catch (error) {
+      // Fallback to inline config creation
+      const config = {
+        tier: 'free',
+        engines: DEFAULT_CONFIG.engines,
+        performance: DEFAULT_CONFIG.performance,
+        output: DEFAULT_CONFIG.output
+      };
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      console.log(chalk.green('✓ Created llmverify.config.json'));
+    }
   });
 
 program

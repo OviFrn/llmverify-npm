@@ -263,3 +263,11 @@ export type {
   AuditEntry,
   AuditConfig
 } from './audit';
+
+// Configuration Management
+export {
+  loadConfig,
+  loadConfigFromEnv,
+  loadConfigFile,
+  createDefaultConfigFile
+} from './config';
