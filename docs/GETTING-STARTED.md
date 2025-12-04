@@ -366,11 +366,11 @@ const prodResult = await prodVerify(aiOutput);
 
 | Preset | When to Use | Speed |
 |--------|-------------|-------|
-| `dev` | Local development & testing | ●●●○○ |
-| `prod` | Production APIs (low latency) | ●●●●● |
-| `strict` | High-stakes, compliance | ●●○○○ |
-| `fast` | High-throughput pipelines | ●●●●● |
-| `ci` | CI/CD pipelines | ●●●●○ |
+| `dev` | Local development & testing | [*][*][*][ ][ ] |
+| `prod` | Production APIs (low latency) | [*][*][*][*][*] |
+| `strict` | High-stakes, compliance | [*][*][ ][ ][ ] |
+| `fast` | High-throughput pipelines | [*][*][*][*][*] |
+| `ci` | CI/CD pipelines | [*][*][*][*][ ] |
 
 ### CLI Commands
 

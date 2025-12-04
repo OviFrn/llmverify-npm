@@ -68,11 +68,11 @@ llmverify run [content] [options]
 **Presets:**
 | Preset | Description | Speed | Thoroughness |
 |--------|-------------|-------|--------------|
-| `dev` | Development mode - balanced output | ●●●○○ | ●●●●○ |
-| `prod` | Production mode - optimized for speed | ●●●●● | ●●●○○ |
-| `strict` | Strict mode - maximum scrutiny | ●●○○○ | ●●●●● |
-| `fast` | Fast mode - minimal checks | ●●●●● | ●●○○○ |
-| `ci` | CI mode - optimized for pipelines | ●●●●○ | ●●●●○ |
+| `dev` | Development mode - balanced output | [*][*][*][ ][ ] | [*][*][*][*][ ] |
+| `prod` | Production mode - optimized for speed | [*][*][*][*][*] | [*][*][*][ ][ ] |
+| `strict` | Strict mode - maximum scrutiny | [*][*][ ][ ][ ] | [*][*][*][*][*] |
+| `fast` | Fast mode - minimal checks | [*][*][*][*][*] | [*][*][ ][ ][ ] |
+| `ci` | CI mode - optimized for pipelines | [*][*][*][*][ ] | [*][*][*][*][ ] |
 
 **Examples:**
 ```bash
@@ -233,21 +233,21 @@ npx llmverify verify --json '{"status": "ok", "data": []}'
 
 **Output (text format):**
 ```
-🔍 Running llmverify...
+[SCAN] Running llmverify...
 
-📊 Risk Assessment
+[CHART] Risk Assessment
    Level: LOW
    Score: 12.5%
    Action: allow
 
-🔍 Findings
+[SCAN] Findings
 ┌──────────┬──────────┬─────────────────────┬────────────┐
 │ Severity │ Category │ Message             │ Confidence │
 ├──────────┼──────────┼─────────────────────┼────────────┤
 │ info     │ pii      │ No PII detected     │ 95%        │
 └──────────┴──────────┴─────────────────────┴────────────┘
 
-📝 Interpretation
+[NOTE] Interpretation
    Content appears safe with low risk indicators.
 
 Verification ID: abc123
@@ -277,14 +277,14 @@ npx llmverify engines
 
 **Output:**
 ```
-🔧 Verification Engines
+[TOOL] Verification Engines
 
-  ● classification     enabled    Intent, hallucination, reasoning detection
-  ● csm6               enabled    Security checks (PII, harmful content, injection)
-  ● hallucination      enabled    Hallucination and factuality detection
-  ● drift              enabled    Fingerprint drift analysis
-  ○ token-rate         disabled   Token rate monitoring (static mode)
-  ○ latency            disabled   Latency tracking (no wrapping client)
+  [*] classification     enabled    Intent, hallucination, reasoning detection
+  [*] csm6               enabled    Security checks (PII, harmful content, injection)
+  [*] hallucination      enabled    Hallucination and factuality detection
+  [*] drift              enabled    Fingerprint drift analysis
+  [ ] token-rate         disabled   Token rate monitoring (static mode)
+  [ ] latency            disabled   Latency tracking (no wrapping client)
 ```
 
 ---
@@ -313,7 +313,7 @@ npx llmverify explain drift
 
 **Output:**
 ```
-🔍 Engine: hallucination
+[SCAN] Engine: hallucination
 
 ──────────────────────────────────────────────────
 Detects AI-generated content that may be factually incorrect or fabricated.
@@ -341,11 +341,11 @@ llmverify adapters
 ```
 🔌 Available Adapters
 
-  ● openai       available    OpenAI GPT models
-  ● anthropic    available    Anthropic Claude models
-  ● langchain    available    LangChain integration
-  ○ vercel-ai    planned      Vercel AI SDK
-  ○ ollama       planned      Local Ollama models
+  [*] openai       available    OpenAI GPT models
+  [*] anthropic    available    Anthropic Claude models
+  [*] langchain    available    LangChain integration
+  [ ] vercel-ai    planned      Vercel AI SDK
+  [ ] ollama       planned      Local Ollama models
 ```
 
 ---
@@ -361,14 +361,14 @@ llmverify doctor
 
 **Output:**
 ```
-🩺 llmverify Doctor
+[CHECK] llmverify Doctor
 
 ──────────────────────────────────────────────────
-  ✓ Node.js Version: v20.10.0
-  ✓ Config File: Found
-  ○ OPENAI_API_KEY: Not set
-  ○ ANTHROPIC_API_KEY: Not set
-  ✓ Postinstall: Present
+  [OK] Node.js Version: v20.10.0
+  [OK] Config File: Found
+  [ ] OPENAI_API_KEY: Not set
+  [ ] ANTHROPIC_API_KEY: Not set
+  [OK] Postinstall: Present
 
 Run "llmverify init" to create a config file.
 ```
@@ -428,7 +428,7 @@ llmverify privacy
 
 **Output:**
 ```
-📋 llmverify Privacy Guarantees
+[LIST] llmverify Privacy Guarantees
 
 Free Tier:
   • Network Traffic: ZERO
@@ -442,10 +442,10 @@ Paid Tiers:
   • Requires: EXPLICIT_API_KEY
 
 We NEVER:
-  ✗ No training on user data
-  ✗ No third-party data sharing
-  ✗ No hidden telemetry
-  ✗ No tracking without explicit consent
+  [FAIL] No training on user data
+  [FAIL] No third-party data sharing
+  [FAIL] No hidden telemetry
+  [FAIL] No tracking without explicit consent
 ```
 
 ---
@@ -466,7 +466,7 @@ llmverify info [options]
 
 **Output:**
 ```
-📦 llmverify Package Information
+[PKG] llmverify Package Information
 
 Package
 ──────────────────────────────────────────────────
@@ -476,12 +476,12 @@ Package
 
 Engines Included
 ──────────────────────────────────────────────────
-  ✓ classification (intent, hallucination, reasoning)
-  ✓ CSM6 (security, PII, harmful content, injection)
-  ✓ hallucination detection
-  ✓ drift analysis
-  ✓ latency monitoring
-  ✓ token-rate tracking
+  [OK] classification (intent, hallucination, reasoning)
+  [OK] CSM6 (security, PII, harmful content, injection)
+  [OK] hallucination detection
+  [OK] drift analysis
+  [OK] latency monitoring
+  [OK] token-rate tracking
 
 Documentation
 ──────────────────────────────────────────────────
@@ -645,9 +645,9 @@ npx llmverify verify "$AI_OUTPUT"
 EXIT_CODE=$?
 
 case $EXIT_CODE in
-  0) echo "✓ Low risk - proceeding" ;;
-  1) echo "⚠ Moderate risk - review required" ;;
-  2) echo "✗ High risk - blocked" && exit 1 ;;
+  0) echo "[OK] Low risk - proceeding" ;;
+  1) echo "[WARN] Moderate risk - review required" ;;
+  2) echo "[FAIL] High risk - blocked" && exit 1 ;;
 esac
 ```
 

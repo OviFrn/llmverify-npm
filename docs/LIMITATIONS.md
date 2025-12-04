@@ -16,21 +16,21 @@ llmverify is a **heuristic-based monitoring and classification tool**. It provid
 
 ## What llmverify IS
 
-✅ A **runtime monitoring layer** that tracks LLM behavior over time  
-✅ A **pattern-based classifier** that identifies output characteristics  
-✅ A **risk indicator system** that flags suspicious patterns  
-✅ A **developer tool** for building more observable AI systems  
-✅ A **local-first library** with zero data collection  
+[OK] A **runtime monitoring layer** that tracks LLM behavior over time  
+[OK] A **pattern-based classifier** that identifies output characteristics  
+[OK] A **risk indicator system** that flags suspicious patterns  
+[OK] A **developer tool** for building more observable AI systems  
+[OK] A **local-first library** with zero data collection  
 
 ---
 
 ## What llmverify IS NOT
 
-❌ A fact-checking service  
-❌ A content moderation AI  
-❌ A security guarantee  
-❌ A replacement for human review  
-❌ An official audit tool for any provider  
+[FAIL] A fact-checking service  
+[FAIL] A content moderation AI  
+[FAIL] A security guarantee  
+[FAIL] A replacement for human review  
+[FAIL] An official audit tool for any provider  
 
 ---
 

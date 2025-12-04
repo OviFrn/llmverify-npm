@@ -288,11 +288,11 @@ npm run test:integration
 PASS  tests/integration.test.js
   Integration Tests
     Server Health
-      ✓ should respond to health check (45 ms)
+      [OK] should respond to health check (45 ms)
     Content Verification Scenarios
-      ✓ Scenario 1: Simple safe content (234 ms)
-      ✓ Scenario 2: Code with no issues (189 ms)
-      ✓ Scenario 3: Dangerous command detection (256 ms)
+      [OK] Scenario 1: Simple safe content (234 ms)
+      [OK] Scenario 2: Code with no issues (189 ms)
+      [OK] Scenario 3: Dangerous command detection (256 ms)
       ...
 
 Tests:       16 passed, 16 total
