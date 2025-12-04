@@ -110,6 +110,231 @@ console.log(response.llmverify.health); // 'stable' | 'degraded' | 'unstable'
 
 ---
 
+## Server Mode — Run llmverify in Your IDE
+
+**NEW in v1.3.0**: Start a long-running HTTP server for seamless IDE integration.
+
+### Quick Start
+
+```bash
+# Start the server (default port 9009)
+npx llmverify-serve
+
+# Or specify a custom port
+npx llmverify-serve --port=8080
+```
+
+The server will start at `http://localhost:9009` with the following endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/verify` | POST | Verify AI output (main endpoint) |
+| `/check-input` | POST | Check input for prompt injection |
+| `/check-pii` | POST | Detect and redact PII |
+| `/classify` | POST | Classify output intent and hallucination risk |
+
+### API Usage Examples
+
+#### Verify AI Output
+
+```bash
+curl -X POST http://localhost:9009/verify \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Your AI output here"}'
+```
+
+```javascript
+// Node.js / JavaScript
+const response = await fetch('http://localhost:9009/verify', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ text: 'Your AI output here' })
+});
+const result = await response.json();
+console.log(result.result.risk.level); // "low" | "moderate" | "high" | "critical"
+```
+
+```python
+# Python
+import requests
+
+response = requests.post('http://localhost:9009/verify', json={
+    'text': 'Your AI output here'
+})
+result = response.json()
+print(result['result']['risk']['level'])
+```
+
+#### Check Input Safety
+
+```bash
+curl -X POST http://localhost:9009/check-input \
+  -H "Content-Type: application/json" \
+  -d '{"text": "User input to check"}'
+```
+
+#### Detect PII
+
+```bash
+curl -X POST http://localhost:9009/check-pii \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Contact me at john@example.com"}'
+```
+
+### IDE Integration Guide
+
+#### Windsurf / Cursor / VS Code
+
+Add this to your AI assistant's system prompt or rules:
+
+```markdown
+## AI Output Verification
+
+Before responding to the user, verify your output using the local llmverify server:
+
+1. Start the server: `npx llmverify-serve` (runs on http://localhost:9009)
+2. POST your response to http://localhost:9009/verify
+3. Check the risk level in the response
+4. If risk is "high" or "critical", revise your response
+
+Example verification code:
+```javascript
+const verifyOutput = async (text) => {
+  const response = await fetch('http://localhost:9009/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
+  return await response.json();
+};
+
+// Before sending response to user
+const verification = await verifyOutput(myResponse);
+if (verification.result.risk.level === 'critical') {
+  // Revise response or alert user
+}
+```
+```
+
+#### Custom IDE Integration
+
+```typescript
+// Add to your IDE extension or AI agent
+import fetch from 'node-fetch';
+
+async function verifyAIOutput(text: string) {
+  try {
+    const response = await fetch('http://localhost:9009/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    
+    const result = await response.json();
+    
+    if (!result.success) {
+      console.error('Verification failed:', result.error);
+      return null;
+    }
+    
+    return {
+      riskLevel: result.result.risk.level,
+      action: result.result.risk.action,
+      findings: result.result.findings,
+      safe: result.result.risk.level === 'low'
+    };
+  } catch (error) {
+    console.error('Failed to connect to llmverify server:', error);
+    return null;
+  }
+}
+
+// Usage in your AI workflow
+const aiResponse = await generateAIResponse(userPrompt);
+const verification = await verifyAIOutput(aiResponse);
+
+if (verification && !verification.safe) {
+  console.warn(`AI output has ${verification.riskLevel} risk`);
+  // Handle accordingly - revise, flag, or block
+}
+```
+
+#### GitHub Copilot / AI Assistants
+
+For AI assistants that support custom tools or MCP servers, you can integrate llmverify as a verification step:
+
+```json
+{
+  "tools": [
+    {
+      "name": "verify_output",
+      "description": "Verify AI output for safety, PII, and hallucinations",
+      "endpoint": "http://localhost:9009/verify",
+      "method": "POST",
+      "required": ["text"]
+    }
+  ]
+}
+```
+
+### Server Response Format
+
+All endpoints return JSON with this structure:
+
+```typescript
+{
+  success: boolean;
+  result?: {
+    risk: {
+      level: "low" | "moderate" | "high" | "critical";
+      action: "allow" | "review" | "block";
+      score: number; // 0-1
+    };
+    findings: Array<{
+      category: string;
+      severity: string;
+      message: string;
+    }>;
+    // ... additional fields
+  };
+  error?: string;
+  version: string;
+}
+```
+
+### Production Deployment
+
+For production use, consider:
+
+1. **Authentication**: Add API key middleware
+2. **Rate Limiting**: Use `express-rate-limit`
+3. **HTTPS**: Deploy behind a reverse proxy (nginx, Caddy)
+4. **Monitoring**: Add logging and health checks
+5. **Scaling**: Run multiple instances with load balancing
+
+Example with authentication:
+
+```typescript
+import express from 'express';
+import { startServer } from 'llmverify/dist/server';
+
+const app = express();
+
+// Add API key middleware
+app.use((req, res, next) => {
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey !== process.env.LLMVERIFY_API_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+});
+
+startServer(9009);
+```
+
+---
+
 ## Why llmverify?
 
 | Problem | Solution |
@@ -423,6 +648,10 @@ export default async function handler(req, res) {
 ### Quick Start Commands
 
 ```bash
+# ★ Start HTTP server for IDE integration (NEW in v1.3.0)
+npx llmverify-serve                                  # Default port 9009
+npx llmverify-serve --port=8080                      # Custom port
+
 # ★ Interactive setup wizard (first-time users)
 npx llmverify wizard
 
@@ -437,6 +666,9 @@ npx llmverify verify "Your AI output here"
 
 # From file
 npx llmverify verify --file output.txt
+
+# JSON output (for scripting)
+npx llmverify verify "Your AI output" --output json
 
 # JSON validation
 npx llmverify verify --json '{"status": "ok"}'
