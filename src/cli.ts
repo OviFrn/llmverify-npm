@@ -166,7 +166,7 @@ program
     try {
       const { createDefaultConfigFile } = require('./config');
       createDefaultConfigFile();
-      console.log(chalk.green('✓ Created llmverify.config.json'));
+      console.log(chalk.green('[OK] Created llmverify.config.json'));
       console.log(chalk.dim('  Edit this file to customize your verification settings'));
     } catch (error) {
       // Fallback to inline config creation
@@ -177,7 +177,7 @@ program
         output: DEFAULT_CONFIG.output
       };
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      console.log(chalk.green('✓ Created llmverify.config.json'));
+      console.log(chalk.green('[OK] Created llmverify.config.json'));
     }
   });
 
@@ -200,7 +200,7 @@ program
     
     console.log(chalk.red('\nWe NEVER:'));
     PRIVACY_GUARANTEE.neverEver.forEach(item => {
-      console.log(`  ✗ ${item}`);
+      console.log(`  [FAIL] ${item}`);
     });
     
     console.log();
@@ -254,7 +254,7 @@ program
     console.log(chalk.bold('Engines Included'));
     console.log(chalk.gray('─'.repeat(50)));
     info.engines.forEach(engine => {
-      console.log(`  ${chalk.green('✓')} ${engine}`);
+      console.log(`  ${chalk.green('[OK]')} ${engine}`);
     });
     console.log();
     
@@ -267,7 +267,7 @@ program
     
     console.log(chalk.bold('Privacy'));
     console.log(chalk.gray('─'.repeat(50)));
-    console.log(`  ${chalk.green('🔒')} ${info.privacy}`);
+    console.log(`  ${chalk.green('[LOCK]')} ${info.privacy}`);
     console.log();
     
     console.log(chalk.bold('Support Development'));
@@ -303,8 +303,8 @@ program
     
     engines.forEach(engine => {
       const statusIcon = engine.status === 'enabled' 
-        ? chalk.green('●') 
-        : chalk.gray('○');
+        ? chalk.green('[*]') 
+        : chalk.gray('[ ]');
       const statusText = engine.status === 'enabled'
         ? chalk.green('enabled')
         : chalk.gray('disabled');
@@ -391,31 +391,31 @@ program
   .command('doctor')
   .description('Check system health and configuration')
   .action(() => {
-    console.log(chalk.blue('\n🩺 llmverify Doctor\n'));
+    console.log(chalk.blue('\n[CHECK] llmverify Doctor\n'));
     console.log(chalk.gray('─'.repeat(50)));
     
     // Node version check
     const nodeVersion = process.version;
     const nodeMajor = parseInt(nodeVersion.slice(1).split('.')[0]);
     const nodeOk = nodeMajor >= 18;
-    console.log(`  ${nodeOk ? chalk.green('✓') : chalk.red('✗')} Node.js Version: ${nodeVersion} ${nodeOk ? '' : chalk.red('(requires >=18)')}`);
+    console.log(`  ${nodeOk ? chalk.green('[OK]') : chalk.red('[FAIL]')} Node.js Version: ${nodeVersion} ${nodeOk ? '' : chalk.red('(requires >=18)')}`);
     
     // Config file check
     const configPath = path.resolve('llmverify.config.json');
     const configExists = fs.existsSync(configPath);
-    console.log(`  ${configExists ? chalk.green('✓') : chalk.yellow('○')} Config File: ${configExists ? 'Found' : 'Not found (optional)'}`);
+    console.log(`  ${configExists ? chalk.green('[OK]') : chalk.yellow('[ ]')} Config File: ${configExists ? 'Found' : 'Not found (optional)'}`);
     
     // Environment variables
     const envVars = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY'];
     envVars.forEach(envVar => {
       const exists = !!process.env[envVar];
-      console.log(`  ${exists ? chalk.green('✓') : chalk.gray('○')} ${envVar}: ${exists ? 'Set' : 'Not set'}`);
+      console.log(`  ${exists ? chalk.green('[OK]') : chalk.gray('[ ]')} ${envVar}: ${exists ? 'Set' : 'Not set'}`);
     });
     
     // Postinstall check
     const postinstallPath = path.resolve(__dirname, 'postinstall.js');
     const postinstallExists = fs.existsSync(postinstallPath);
-    console.log(`  ${postinstallExists ? chalk.green('✓') : chalk.yellow('○')} Postinstall: ${postinstallExists ? 'Present' : 'Not found'}`);
+    console.log(`  ${postinstallExists ? chalk.green('[OK]') : chalk.yellow('[ ]')} Postinstall: ${postinstallExists ? 'Present' : 'Not found'}`);
     
     console.log();
     console.log(chalk.dim('Run "llmverify init" to create a config file.'));
@@ -487,7 +487,7 @@ program
       console.log(chalk.bold('\nEngines'));
       console.log(chalk.gray('─'.repeat(60)));
       Object.entries(versionInfo.engines).forEach(([engine, status]) => {
-        const icon = status === 'enabled' ? chalk.green('●') : chalk.gray('○');
+        const icon = status === 'enabled' ? chalk.green('[*]') : chalk.gray('[ ]');
         console.log(`  ${icon} ${chalk.cyan(engine.padEnd(16))} ${status}`);
       });
       
@@ -498,12 +498,12 @@ program
       console.log(chalk.bold('\nCompliance Frameworks'));
       console.log(chalk.gray('─'.repeat(60)));
       versionInfo.compliance.forEach(framework => {
-        console.log(`  ${chalk.green('✓')} ${framework}`);
+        console.log(`  ${chalk.green('[OK]')} ${framework}`);
       });
       
       console.log(chalk.bold('\nPrivacy'));
       console.log(chalk.gray('─'.repeat(60)));
-      console.log(`  ${chalk.green('🔒')} ${versionInfo.privacy}`);
+      console.log(`  ${chalk.green('[LOCK]')} ${versionInfo.privacy}`);
       
       console.log(chalk.bold('\nLinks'));
       console.log(chalk.gray('─'.repeat(60)));
@@ -677,7 +677,7 @@ function printRunResult(result: CoreRunResult): void {
     console.log(`  Intent:             ${chalk.cyan(result.classification.intent)}`);
     console.log(`  Hallucination Risk: ${getHallucinationColor(result.classification.hallucinationLabel)(result.classification.hallucinationLabel)} (${(result.classification.hallucinationRisk * 100).toFixed(0)}%)`);
     if (result.classification.isJson) {
-      console.log(`  JSON Valid:         ${chalk.green('✓')}`);
+      console.log(`  JSON Valid:         ${chalk.green('[OK]')}`);
     }
     console.log();
   }
@@ -686,7 +686,7 @@ function printRunResult(result: CoreRunResult): void {
   if (result.inputSafety) {
     console.log(chalk.bold('Input Safety'));
     console.log(chalk.gray('─'.repeat(40)));
-    const safeIcon = result.inputSafety.safe ? chalk.green('✓ Safe') : chalk.red('✗ Unsafe');
+    const safeIcon = result.inputSafety.safe ? chalk.green('[OK] Safe') : chalk.red('[FAIL] Unsafe');
     console.log(`  Status:   ${safeIcon}`);
     console.log(`  Findings: ${result.inputSafety.injectionFindings.length}`);
     console.log();
@@ -696,7 +696,7 @@ function printRunResult(result: CoreRunResult): void {
   if (result.piiCheck) {
     console.log(chalk.bold('PII Detection'));
     console.log(chalk.gray('─'.repeat(40)));
-    const piiIcon = result.piiCheck.hasPII ? chalk.yellow('⚠ Found') : chalk.green('✓ None');
+    const piiIcon = result.piiCheck.hasPII ? chalk.yellow('[WARN] Found') : chalk.green('[OK] None');
     console.log(`  Status: ${piiIcon}`);
     console.log(`  Count:  ${result.piiCheck.piiCount}`);
     console.log();
@@ -706,7 +706,7 @@ function printRunResult(result: CoreRunResult): void {
   if (result.harmfulCheck) {
     console.log(chalk.bold('Harmful Content'));
     console.log(chalk.gray('─'.repeat(40)));
-    const harmIcon = result.harmfulCheck.hasHarmful ? chalk.red('✗ Found') : chalk.green('✓ None');
+    const harmIcon = result.harmfulCheck.hasHarmful ? chalk.red('[FAIL] Found') : chalk.green('[OK] None');
     console.log(`  Status:   ${harmIcon}`);
     console.log(`  Findings: ${result.harmfulCheck.findings.length}`);
     console.log();
@@ -728,12 +728,12 @@ function printRunSummary(result: CoreRunResult): void {
   };
   const riskColor = riskColors[result.verification.risk.level] || chalk.white;
 
-  console.log(`${riskColor('●')} Risk: ${riskColor(result.verification.risk.level.toUpperCase())} | Action: ${result.verification.risk.action} | ${result.meta.totalLatencyMs}ms`);
+  console.log(`${riskColor('[*]')} Risk: ${riskColor(result.verification.risk.level.toUpperCase())} | Action: ${result.verification.risk.action} | ${result.meta.totalLatencyMs}ms`);
   
   const checks: string[] = [];
-  if (result.inputSafety) checks.push(result.inputSafety.safe ? '✓input' : '✗input');
-  if (result.piiCheck) checks.push(result.piiCheck.hasPII ? '⚠pii' : '✓pii');
-  if (result.harmfulCheck) checks.push(result.harmfulCheck.hasHarmful ? '✗harm' : '✓harm');
+  if (result.inputSafety) checks.push(result.inputSafety.safe ? '[OK]input' : '[FAIL]input');
+  if (result.piiCheck) checks.push(result.piiCheck.hasPII ? '[WARN]pii' : '[OK]pii');
+  if (result.harmfulCheck) checks.push(result.harmfulCheck.hasHarmful ? '[FAIL]harm' : '[OK]harm');
   if (result.classification) checks.push(`intent:${result.classification.intent}`);
   
   if (checks.length > 0) {
@@ -778,11 +778,11 @@ program
     });
     
     presetTable.push(
-      [chalk.green('dev'), 'Local development & testing', '●●●○○', '●●●●○'],
-      [chalk.yellow('prod'), 'Production APIs (low latency)', '●●●●●', '●●●○○'],
-      [chalk.red('strict'), 'High-stakes, compliance', '●●○○○', '●●●●●'],
-      [chalk.cyan('fast'), 'High-throughput pipelines', '●●●●●', '●●○○○'],
-      [chalk.magenta('ci'), 'CI/CD pipelines', '●●●●○', '●●●●○']
+      [chalk.green('dev'), 'Local development & testing', '[*][*][*][ ][ ]', '[*][*][*][*][ ]'],
+      [chalk.yellow('prod'), 'Production APIs (low latency)', '[*][*][*][*][*]', '[*][*][*][ ][ ]'],
+      [chalk.red('strict'), 'High-stakes, compliance', '[*][*][ ][ ][ ]', '[*][*][*][*][*]'],
+      [chalk.cyan('fast'), 'High-throughput pipelines', '[*][*][*][*][*]', '[*][*][ ][ ][ ]'],
+      [chalk.magenta('ci'), 'CI/CD pipelines', '[*][*][*][*][ ]', '[*][*][*][*][ ]']
     );
     
     console.log(presetTable.toString());
@@ -850,7 +850,7 @@ program
     console.log(`  ${chalk.cyan('Getting Started:')} docs/GETTING-STARTED.md`);
     console.log();
 
-    console.log(chalk.green.bold('\n✓ Wizard complete! You\'re ready to use llmverify.\n'));
+    console.log(chalk.green.bold('\n[OK] Wizard complete! You\'re ready to use llmverify.\n'));
     console.log(chalk.dim('Run "npx llmverify run --help" for more options.\n'));
   });
 
@@ -878,40 +878,40 @@ program
         description: 'Development mode - balanced, informative output',
         useCase: 'Local development and testing',
         engines: ['hallucination', 'consistency', 'jsonValidator', 'csm6'],
-        speed: '●●●○○',
-        thoroughness: '●●●●○'
+        speed: '[*][*][*][ ][ ]',
+        thoroughness: '[*][*][*][*][ ]'
       },
       {
         name: 'prod',
         description: 'Production mode - optimized for speed',
         useCase: 'Production APIs with latency requirements',
         engines: ['jsonValidator', 'csm6'],
-        speed: '●●●●●',
-        thoroughness: '●●●○○'
+        speed: '[*][*][*][*][*]',
+        thoroughness: '[*][*][*][ ][ ]'
       },
       {
         name: 'strict',
         description: 'Strict mode - all engines, maximum scrutiny',
         useCase: 'High-stakes content, compliance requirements',
         engines: ['hallucination', 'consistency', 'jsonValidator', 'csm6 (all checks)'],
-        speed: '●●○○○',
-        thoroughness: '●●●●●'
+        speed: '[*][*][ ][ ][ ]',
+        thoroughness: '[*][*][*][*][*]'
       },
       {
         name: 'fast',
         description: 'Fast mode - minimal checks, maximum speed',
         useCase: 'High-throughput scenarios',
         engines: ['csm6 (security only)'],
-        speed: '●●●●●',
-        thoroughness: '●●○○○'
+        speed: '[*][*][*][*][*]',
+        thoroughness: '[*][*][ ][ ][ ]'
       },
       {
         name: 'ci',
         description: 'CI mode - optimized for CI/CD pipelines',
         useCase: 'Automated testing and deployment',
         engines: ['hallucination', 'consistency', 'jsonValidator', 'csm6'],
-        speed: '●●●●○',
-        thoroughness: '●●●●○'
+        speed: '[*][*][*][*][ ]',
+        thoroughness: '[*][*][*][*][ ]'
       }
     ];
 
@@ -1007,7 +1007,7 @@ program
       });
 
       results.forEach(r => {
-        const speedBars = r.avgMs < 15 ? '●●●●●' : r.avgMs < 25 ? '●●●●○' : r.avgMs < 40 ? '●●●○○' : r.avgMs < 60 ? '●●○○○' : '●○○○○';
+        const speedBars = r.avgMs < 15 ? '[*][*][*][*][*]' : r.avgMs < 25 ? '[*][*][*][*][ ]' : r.avgMs < 40 ? '[*][*][*][ ][ ]' : r.avgMs < 60 ? '[*][*][ ][ ][ ]' : '[*][ ][ ][ ][ ]';
         const avgColor = r.avgMs < 20 ? chalk.green : r.avgMs < 50 ? chalk.yellow : chalk.red;
         table.push([
           r.preset,
@@ -1065,12 +1065,12 @@ program
       console.log(chalk.green('Drift Records:'), stats.driftRecordCount);
       
       if (stats.recentDrifts.length > 0) {
-        console.log(chalk.yellow('\n⚠️  Recent Drift Detected:\n'));
+        console.log(chalk.yellow('\n[WARN]️  Recent Drift Detected:\n'));
         stats.recentDrifts.forEach((drift: any) => {
           console.log(`  ${chalk.cyan(drift.metric)}: ${drift.driftPercent.toFixed(2)}% (${drift.severity})`);
         });
       } else {
-        console.log(chalk.green('\n✓ No significant drift detected'));
+        console.log(chalk.green('\n[OK] No significant drift detected'));
       }
     } catch (error) {
       console.error(chalk.red('Failed to load baseline stats:', (error as Error).message));
@@ -1085,7 +1085,7 @@ program
       const { getBaselineStorage } = require('./baseline/storage');
       const storage = getBaselineStorage();
       storage.resetBaseline();
-      console.log(chalk.green('\n✓ Baseline reset successfully'));
+      console.log(chalk.green('\n[OK] Baseline reset successfully'));
       console.log(chalk.dim('New baseline will be created on next verification'));
     } catch (error) {
       console.error(chalk.red('Failed to reset baseline:', (error as Error).message));
@@ -1137,7 +1137,7 @@ program
       
       if (options.output) {
         saveBadgeToFile(options.output, options.name, options.url);
-        console.log(chalk.green(`\n✓ Badge saved to: ${options.output}\n`));
+        console.log(chalk.green(`\n[OK] Badge saved to: ${options.output}\n`));
       } else {
         const { markdown, html, signature } = generateBadgeForProject(options.name, options.url);
         
@@ -1171,8 +1171,8 @@ program
     
     adapters.forEach(adapter => {
       const statusIcon = adapter.status === 'available' 
-        ? chalk.green('●') 
-        : chalk.yellow('○');
+        ? chalk.green('[*]') 
+        : chalk.yellow('[ ]');
       const statusText = adapter.status === 'available'
         ? chalk.green('available')
         : chalk.yellow('planned');
@@ -1247,7 +1247,7 @@ function printTextResult(result: VerifyResult, verbose: boolean): void {
   
   // Limitations
   if (verbose) {
-    console.log(chalk.yellow.bold('⚠️  Limitations'));
+    console.log(chalk.yellow.bold('[WARN]️  Limitations'));
     result.limitations.slice(0, 5).forEach(limitation => {
       console.log(`   • ${limitation}`);
     });

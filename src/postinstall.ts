@@ -31,7 +31,7 @@ function printBanner(): void {
   const banner = `
 ${c.cyan}${c.bright}╔══════════════════════════════════════════════════════════════════════════════╗${c.reset}
 ${c.cyan}${c.bright}║${c.reset}                                                                              ${c.cyan}${c.bright}║${c.reset}
-${c.cyan}${c.bright}║${c.reset}   ${c.green}${c.bright}✓ llmverify ${VERSION}${c.reset} ${c.dim}— AI Output Verification Toolkit${c.reset}                        ${c.cyan}${c.bright}║${c.reset}
+${c.cyan}${c.bright}║${c.reset}   ${c.green}${c.bright}[OK] llmverify ${VERSION}${c.reset} ${c.dim}— AI Output Verification Toolkit${c.reset}                        ${c.cyan}${c.bright}║${c.reset}
 ${c.cyan}${c.bright}║${c.reset}                                                                              ${c.cyan}${c.bright}║${c.reset}
 ${c.cyan}${c.bright}║${c.reset}   ${c.yellow}Local-first${c.reset} • ${c.yellow}Zero telemetry${c.reset} • ${c.yellow}Privacy-preserving${c.reset}                      ${c.cyan}${c.bright}║${c.reset}
 ${c.cyan}${c.bright}║${c.reset}                                                                              ${c.cyan}${c.bright}║${c.reset}
@@ -86,8 +86,8 @@ ${c.cyan}${c.bright}║${c.reset}   ${c.yellow}☕ Support${c.reset}  https://ww
 ${c.cyan}${c.bright}║${c.reset}                                                                              ${c.cyan}${c.bright}║${c.reset}
 ${c.cyan}${c.bright}╠══════════════════════════════════════════════════════════════════════════════╣${c.reset}
 ${c.cyan}${c.bright}║${c.reset}                                                                              ${c.cyan}${c.bright}║${c.reset}
-${c.cyan}${c.bright}║${c.reset}   ${c.green}🔒 PRIVACY${c.reset}  100% local • Zero network requests • Zero telemetry         ${c.cyan}${c.bright}║${c.reset}
-${c.cyan}${c.bright}║${c.reset}   ${c.green}✓ VERIFIED${c.reset}  Run tcpdump while using — you'll see nothing                ${c.cyan}${c.bright}║${c.reset}
+${c.cyan}${c.bright}║${c.reset}   ${c.green}[LOCK] PRIVACY${c.reset}  100% local • Zero network requests • Zero telemetry         ${c.cyan}${c.bright}║${c.reset}
+${c.cyan}${c.bright}║${c.reset}   ${c.green}[OK] VERIFIED${c.reset}  Run tcpdump while using — you'll see nothing                ${c.cyan}${c.bright}║${c.reset}
 ${c.cyan}${c.bright}║${c.reset}                                                                              ${c.cyan}${c.bright}║${c.reset}
 ${c.cyan}${c.bright}╚══════════════════════════════════════════════════════════════════════════════╝${c.reset}
 
