@@ -37,7 +37,7 @@
     "build": "tsc",
     "build:clean": "rm -rf dist && tsc",
     "serve": "node start-server.js",
-    "monitor": "powershell -ExecutionPolicy Bypass -File monitor-chat.ps1",
+    "monitor": "node monitor.js",
     "postinstall": "node dist/postinstall.js || true",
     "test": "jest",
     "test:coverage": "jest --coverage",
