@@ -34,6 +34,12 @@ npm run monitor
 2. Select AI response and copy (Ctrl+C)
 3. See verification score in Terminal 2 automatically
 
+**Optional - AI Assistant Integration:**
+```bash
+npm run setup-ai
+# Helps your AI assistant guide you through llmverify usage
+```
+
 See [QUICK-START.md](QUICK-START.md) for detailed instructions.
 
 ---
