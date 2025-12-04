@@ -49,6 +49,7 @@ prompts/
 *-ANALYSIS.md
 *-PLAN.md
 *-NOTES.md
+*-GUIDE.md
 DEPLOYMENT-*.md
 SESSION-*.md
 VERIFICATION-*.md
@@ -61,6 +62,21 @@ CHECKPOINT-*.md
 MEMORY-*.md
 CHAT-*.md
 AI-*.md
+PUBLISHING.md
+TRIGGER-*.md
+RELEASE-*.md
+README-SIMPLE.md
+USER-GUIDE.md
+
+# Internal docs folder
+docs/AI-*.md
+docs/ALGORITHMS.md
+docs/SERVER-MODE.md
+docs/QUICK-START-*.md
+docs/IDE-*.md
+docs/FOR-*.md
+docs/BADGE-*.md
+docs/AUTO-*.md
 
 # Test scripts (local only)
 test-*.ps1
