@@ -1,0 +1,145 @@
+{
+  "name": "llmverify",
+  "displayName": "llmverify - AI Output Verification",
+  "description": "Verify AI responses for safety, hallucinations, PII, and security vulnerabilities. Works with ChatGPT, Claude, Copilot, and any AI assistant.",
+  "version": "1.0.0",
+  "publisher": "kingcaliber",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subodhkc/llmverify-npm"
+  },
+  "bugs": {
+    "url": "https://github.com/subodhkc/llmverify-npm/issues"
+  },
+  "homepage": "https://github.com/subodhkc/llmverify-npm#readme",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning",
+    "Linters"
+  ],
+  "keywords": [
+    "ai",
+    "llm",
+    "verification",
+    "safety",
+    "hallucination",
+    "pii",
+    "security",
+    "chatgpt",
+    "copilot",
+    "claude"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "llmverify.verifySelection",
+        "title": "Verify Selected Text",
+        "category": "llmverify"
+      },
+      {
+        "command": "llmverify.verifyClipboard",
+        "title": "Verify Clipboard Content",
+        "category": "llmverify"
+      },
+      {
+        "command": "llmverify.showPanel",
+        "title": "Show Verification Panel",
+        "category": "llmverify"
+      },
+      {
+        "command": "llmverify.startServer",
+        "title": "Start Server",
+        "category": "llmverify"
+      },
+      {
+        "command": "llmverify.stopServer",
+        "title": "Stop Server",
+        "category": "llmverify"
+      },
+      {
+        "command": "llmverify.checkServer",
+        "title": "Check Server Status",
+        "category": "llmverify"
+      }
+    ],
+    "configuration": {
+      "title": "llmverify",
+      "properties": {
+        "llmverify.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:9009",
+          "description": "URL of the llmverify server"
+        },
+        "llmverify.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start server when extension activates"
+        },
+        "llmverify.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for high-risk content"
+        },
+        "llmverify.riskThreshold": {
+          "type": "string",
+          "default": "high",
+          "enum": ["low", "moderate", "high", "critical"],
+          "description": "Minimum risk level to show notifications"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "llmverify.verifySelection",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "llmverify.verifyClipboard",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v"
+      },
+      {
+        "command": "llmverify.showPanel",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "llmverify.verifySelection",
+          "when": "editorHasSelection",
+          "group": "llmverify"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "eslint": "^8.x",
+    "typescript": "^5.x",
+    "@vscode/vsce": "^2.x"
+  }
+}
