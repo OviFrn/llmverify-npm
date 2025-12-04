@@ -248,8 +248,30 @@ console.log(verifier.formatInline(result));
 // Output: [llmverify] [PASS] SAFE TO USE (Risk: 6.3%)
 ```
 
+## Risk Levels
+
+| Level | Range | Action | Description |
+|-------|-------|--------|-------------|
+| **LOW** | 0-25% | Safe to use | No significant issues detected |
+| **MODERATE** | 26-50% | Review recommended | Minor inconsistencies, verify key facts |
+| **HIGH** | 51-75% | Fix before using | Multiple issues, likely hallucinations |
+| **CRITICAL** | 76-100% | Do not use | Severe problems, reject content |
+
+**Your score of 17.2% means:** Safe to use with normal verification practices.
+
+See [RISK-LEVELS.md](docs/RISK-LEVELS.md) for:
+- Detailed explanations of each level
+- How to lower risk scores
+- Practical examples
+- Risk factor breakdowns
+- Integration strategies
+
+---
+
 ## Documentation
 
+- [Quick Start](QUICK-START.md) - Monitor mode vs API mode usage
+- [Risk Levels Guide](docs/RISK-LEVELS.md) - Understanding and lowering risk scores
 - [Integration Guide](docs/INTEGRATION-GUIDE.md) - Complete integration patterns (Server, AI agents, IDE)
 - [Getting Started](docs/GETTING-STARTED.md) - Beginner tutorial
 - [CLI Reference](docs/CLI-REFERENCE.md) - Complete command reference

@@ -162,6 +162,7 @@
     "dist",
     "bin",
     "start-server.js",
+    "monitor.js",
     "monitor-chat.ps1",
     "QUICK-START.md",
     "docs",

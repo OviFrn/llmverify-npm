@@ -1,6 +1,22 @@
 # Quick Start: AI Response Verification in Windsurf
 
-## Setup (One-Time)
+## Two Ways to Use llmverify
+
+### Option 1: Monitor Mode (Easiest for IDE)
+- Automatically verifies AI responses as you copy them
+- Shows scores in terminal
+- No code changes needed
+- **Best for:** Windsurf, VS Code, any IDE
+
+### Option 2: API Mode (For Your Code)
+- Integrate verification into your application
+- Programmatic access to risk scores
+- Full control over verification
+- **Best for:** Production apps, custom workflows
+
+---
+
+## Option 1: Monitor Mode Setup (One-Time)
 
 ### Step 1: Open Two Terminals in Windsurf
 
@@ -151,6 +167,142 @@ npm run serve
 
 ---
 
+---
+
+## Option 2: API Mode (In Your Code)
+
+### Installation
+
+```bash
+npm install llmverify
+```
+
+### Basic Usage
+
+```javascript
+const { verify } = require('llmverify');
+
+// Verify AI response
+const result = await verify('AI response text here');
+
+console.log(result.result.risk.overall);  // 0.172 (17.2%)
+console.log(result.result.risk.level);    // "low"
+console.log(result.summary.verdict);      // "[PASS] SAFE TO USE"
+```
+
+### In Express API
+
+```javascript
+const express = require('express');
+const { verify } = require('llmverify');
+
+app.post('/chat', async (req, res) => {
+  const aiResponse = await callOpenAI(req.body.message);
+  
+  // Verify before sending to user
+  const verification = await verify(aiResponse);
+  
+  if (verification.result.risk.level === 'critical') {
+    return res.status(400).json({ 
+      error: 'Response failed safety check' 
+    });
+  }
+  
+  res.json({ 
+    response: aiResponse,
+    riskScore: verification.result.risk.overall 
+  });
+});
+```
+
+### With OpenAI
+
+```javascript
+const OpenAI = require('openai');
+const { verify } = require('llmverify');
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function safeChat(userMessage) {
+  // Get AI response
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [{ role: "user", content: userMessage }]
+  });
+  
+  const aiResponse = completion.choices[0].message.content;
+  
+  // Verify it
+  const verification = await verify(aiResponse);
+  
+  return {
+    response: aiResponse,
+    risk: verification.result.risk,
+    safe: verification.result.risk.level !== 'critical'
+  };
+}
+```
+
+---
+
+## Understanding Risk Scores
+
+### Risk Levels
+
+| Level | Range | Color | Action |
+|-------|-------|-------|--------|
+| **LOW** | 0-25% | Green | Safe to use |
+| **MODERATE** | 26-50% | Yellow | Review recommended |
+| **HIGH** | 51-75% | Red | Fix before using |
+| **CRITICAL** | 76-100% | Red | Do not use |
+
+### What Each Level Means
+
+**LOW (0-25%)** - Safe to use
+- No significant issues detected
+- Factual claims appear consistent
+- No security vulnerabilities
+- Example: Simple factual responses, basic code
+
+**MODERATE (26-50%)** - Review recommended
+- Minor inconsistencies detected
+- Some unverified claims
+- Potential security considerations
+- Example: Complex explanations, code with edge cases
+
+**HIGH (51-75%)** - Fix before using
+- Multiple inconsistencies found
+- Likely hallucinations present
+- Security vulnerabilities detected
+- Example: Contradictory statements, dangerous commands
+
+**CRITICAL (76-100%)** - Do not use
+- Severe hallucinations detected
+- Major security vulnerabilities
+- Contains PII or confidential info
+- Example: Medical advice, fabricated sources
+
+### How to Lower Risk Scores
+
+1. **Be specific** - Ask clear, focused questions
+2. **Request sources** - "Please cite sources"
+3. **Break down complex questions** - One topic at a time
+4. **Specify context** - "For production" or "For learning"
+5. **Ask for verification** - "Identify any uncertainties"
+
+**Example:**
+```
+Instead of: "Tell me about Python"
+Try: "What are Python list comprehensions with examples?"
+```
+
+See [RISK-LEVELS.md](docs/RISK-LEVELS.md) for detailed explanations.
+
+---
+
 ## That's It!
 
-You're now automatically verifying all AI responses. Every time you copy an AI message, you'll see its safety score instantly.
+**Monitor Mode:** Copy AI responses to see scores instantly  
+**API Mode:** Integrate verification into your code
+
+Both modes use the same verification engine and risk scoring system.

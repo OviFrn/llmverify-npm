@@ -27,6 +27,68 @@ function log(message, color = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
+// Risk level definitions and thresholds
+const RISK_LEVELS = {
+  LOW: { min: 0, max: 25, color: 'green', action: 'Safe to use' },
+  MODERATE: { min: 26, max: 50, color: 'yellow', action: 'Review recommended' },
+  HIGH: { min: 51, max: 75, color: 'red', action: 'Fix before using' },
+  CRITICAL: { min: 76, max: 100, color: 'red', action: 'Do not use' }
+};
+
+function explainRisk(result) {
+  const riskScore = Math.round(result.result.risk.overall * 100 * 10) / 10;
+  const riskLevel = result.result.risk.level.toUpperCase();
+  const findings = result.summary.findings || [];
+  
+  const explanations = [];
+  
+  // Explain what the score means
+  const levelInfo = RISK_LEVELS[riskLevel];
+  explanations.push(`Risk Score ${riskScore}% means: ${levelInfo.action}`);
+  explanations.push(`Range: ${levelInfo.min}-${levelInfo.max}% is ${riskLevel}`);
+  
+  // Break down the risk factors
+  const breakdown = result.result.risk.breakdown || {};
+  if (breakdown.hallucination > 0.1) {
+    explanations.push(`Hallucination risk: ${Math.round(breakdown.hallucination * 100)}% - May contain unverified claims`);
+  }
+  if (breakdown.consistency < 0.9) {
+    explanations.push(`Consistency: ${Math.round(breakdown.consistency * 100)}% - Internal contradictions detected`);
+  }
+  if (breakdown.security > 0.1) {
+    explanations.push(`Security risk: ${Math.round(breakdown.security * 100)}% - May contain unsafe content`);
+  }
+  
+  // Provide actionable suggestions
+  const suggestions = [];
+  if (findings.length > 0) {
+    suggestions.push('How to lower risk:');
+    if (findings.some(f => f.type === 'hallucination')) {
+      suggestions.push('  - Verify factual claims with reliable sources');
+      suggestions.push('  - Ask AI to cite sources for specific facts');
+    }
+    if (findings.some(f => f.type === 'security')) {
+      suggestions.push('  - Remove or sanitize sensitive information');
+      suggestions.push('  - Avoid using commands or code without review');
+    }
+    if (findings.some(f => f.type === 'consistency')) {
+      suggestions.push('  - Check for contradictory statements');
+      suggestions.push('  - Ask AI to clarify conflicting information');
+    }
+    if (findings.some(f => f.type === 'pii')) {
+      suggestions.push('  - Remove personal identifiable information');
+      suggestions.push('  - Use generic examples instead of real data');
+    }
+  } else if (riskScore > 15) {
+    suggestions.push('How to lower risk:');
+    suggestions.push('  - Ask AI to be more specific and factual');
+    suggestions.push('  - Request sources for important claims');
+    suggestions.push('  - Break complex responses into smaller parts');
+  }
+  
+  return { explanations, suggestions };
+}
+
 async function checkServer() {
   return new Promise((resolve) => {
     http.get(`${SERVER_URL}/health`, (res) => {
@@ -152,6 +214,28 @@ async function monitor() {
             log('  Findings:', 'red');
             result.summary.findings.forEach(finding => {
               log(`    - ${finding.message || finding}`, 'red');
+            });
+          }
+          
+          // Add detailed risk explanation
+          const { explanations, suggestions } = explainRisk(result);
+          
+          if (explanations.length > 0) {
+            log('');
+            log('  Understanding Your Risk Score:', 'cyan');
+            explanations.forEach(exp => {
+              log(`    ${exp}`, 'gray');
+            });
+          }
+          
+          if (suggestions.length > 0) {
+            log('');
+            suggestions.forEach(sug => {
+              if (sug.startsWith('How to')) {
+                log(`  ${sug}`, 'yellow');
+              } else {
+                log(`  ${sug}`, 'gray');
+              }
             });
           }
           
