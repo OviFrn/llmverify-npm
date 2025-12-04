@@ -1,0 +1,78 @@
+{
+  "name": "llmverify-windsurf",
+  "displayName": "llmverify - AI Response Verification",
+  "description": "Automatically verify AI responses for safety, hallucinations, and PII",
+  "version": "1.0.0",
+  "publisher": "kingcaliber",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "llmverify.showPanel",
+        "title": "llmverify: Show Verification Panel"
+      },
+      {
+        "command": "llmverify.verifySelection",
+        "title": "llmverify: Verify Selected Text"
+      },
+      {
+        "command": "llmverify.checkServer",
+        "title": "llmverify: Check Server Status"
+      }
+    ],
+    "configuration": {
+      "title": "llmverify",
+      "properties": {
+        "llmverify.autoVerify": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically verify AI responses"
+        },
+        "llmverify.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:9009",
+          "description": "llmverify server URL"
+        },
+        "llmverify.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for high-risk responses"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "llmverify.verifySelection",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "llmverify.showPanel",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^18.x",
+    "eslint": "^8.x"
+  },
+  "dependencies": {}
+}
