@@ -16,8 +16,110 @@ import { verify } from './verify';
 import { isInputSafe, redactPII, containsPII } from './csm6/security';
 import { classify } from './engines/classification';
 import { VERSION } from './constants';
+import { VerifyResult } from './types/results';
 
 const app = express();
+
+/**
+ * Format verification result into human-readable summary
+ */
+function formatHumanReadable(result: VerifyResult): {
+  verdict: string;
+  riskLevel: string;
+  riskScore: string;
+  explanation: string;
+  testsRun: string[];
+  findings: Array<{ severity: string; message: string }>;
+  nextSteps: string[];
+} {
+  const risk = result.risk;
+  
+  // Collect all findings from sub-results
+  const findings: Array<{ severity: string; message: string; category?: string }> = [];
+  
+  if (result.csm6?.findings) {
+    findings.push(...result.csm6.findings.map(f => ({
+      severity: f.severity,
+      message: f.message,
+      category: f.category
+    })));
+  }
+  
+  // Determine verdict emoji and message
+  let verdict = '';
+  let explanation = '';
+  let nextSteps: string[] = [];
+  
+  switch (risk.level) {
+    case 'low':
+      verdict = '✅ SAFE TO USE';
+      explanation = 'This AI response passed all safety checks. No significant risks detected.';
+      nextSteps = [
+        'You can use this content confidently',
+        'Standard human review is still recommended for important decisions',
+        'Continue monitoring future AI outputs'
+      ];
+      break;
+    case 'moderate':
+      verdict = '⚠️ REVIEW RECOMMENDED';
+      explanation = 'Some potential issues detected. Human review recommended before use.';
+      nextSteps = [
+        'Review the findings below carefully',
+        'Verify any factual claims independently',
+        'Consider asking the AI to clarify or revise',
+        'Use caution in production environments'
+      ];
+      break;
+    case 'high':
+      verdict = '🚨 HIGH RISK - CAUTION';
+      explanation = 'Significant risks detected. Do not use without thorough review and revision.';
+      nextSteps = [
+        'DO NOT use this content as-is',
+        'Review all findings and address each issue',
+        'Ask the AI to regenerate with corrections',
+        'Verify all information from trusted sources',
+        'Consider alternative approaches'
+      ];
+      break;
+    case 'critical':
+      verdict = '🛑 CRITICAL - DO NOT USE';
+      explanation = 'Critical safety issues detected. This content should not be used.';
+      nextSteps = [
+        'BLOCK this content immediately',
+        'Do not share or publish this response',
+        'Report to your AI provider if appropriate',
+        'Start fresh with a new prompt',
+        'Review your AI usage policies'
+      ];
+      break;
+  }
+  
+  // Format tests that were run
+  const testsRun = [
+    '🔍 Hallucination Detection - Checked for false claims and fabricated information',
+    '🔄 Consistency Analysis - Verified internal logical consistency',
+    '🛡️ Security Scan - Tested for prompt injection and security risks',
+    '🔒 Privacy Check - Scanned for PII and sensitive data leaks',
+    '⚖️ Safety Review - Evaluated for harmful or unsafe content'
+  ];
+  
+  // Format findings
+  const formattedFindings = findings.map((f: any) => ({
+    severity: f.severity.toUpperCase(),
+    message: f.message,
+    category: f.category
+  }));
+  
+  return {
+    verdict,
+    riskLevel: risk.level.toUpperCase(),
+    riskScore: `${(risk.overall * 100).toFixed(1)}%`,
+    explanation,
+    testsRun,
+    findings: formattedFindings,
+    nextSteps
+  };
+}
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -74,8 +176,12 @@ app.post('/verify', async (req: Request, res: Response): Promise<void> => {
       config: config || undefined
     });
 
+    // Format human-readable response
+    const humanReadable = formatHumanReadable(result);
+
     res.json({
       success: true,
+      summary: humanReadable,
       result,
       meta: {
         version: VERSION,

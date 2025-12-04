@@ -218,6 +218,51 @@ console.log(markdown); // Copy to README.md
 
 ---
 
+## 🖥️ Run in Your IDE (Windsurf, VS Code, Cursor)
+
+**Monitor AI responses in real-time!** Get instant safety scores for every AI output.
+
+### Quick Start (2 minutes)
+
+```bash
+# 1. Start the server
+npx llmverify-serve
+
+# 2. Verify any AI response
+curl -X POST http://localhost:9009/verify \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Your AI response here"}'
+```
+
+**You'll get a human-readable result:**
+```json
+{
+  "summary": {
+    "verdict": "✅ SAFE TO USE",
+    "riskScore": "5.8%",
+    "explanation": "This AI response passed all safety checks.",
+    "testsRun": [
+      "🔍 Hallucination Detection",
+      "🔄 Consistency Analysis", 
+      "🛡️ Security Scan",
+      "🔒 Privacy Check",
+      "⚖️ Safety Review"
+    ],
+    "nextSteps": [
+      "You can use this content confidently",
+      "Standard human review is still recommended"
+    ]
+  }
+}
+```
+
+**✅ Works in:** Windsurf, VS Code, Cursor, any IDE with HTTP support
+
+**📖 Step-by-Step Guide:** [Quick Start for IDEs](docs/QUICK-START-IDE.md) ⭐  
+**📖 Advanced Integration:** [IDE Integration Documentation](docs/IDE-INTEGRATION.md)
+
+---
+
 ## Server Mode — Run llmverify in Your IDE
 
 **NEW in v1.3.0**: Start a long-running HTTP server for seamless IDE integration.
