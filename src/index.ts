@@ -74,6 +74,8 @@ export { VERSION, PRIVACY_GUARANTEE, ACCURACY_STATEMENT } from './constants';
 
 // Errors
 export * from './errors';
+export { ErrorCode, ErrorSeverity, getErrorMetadata, isRecoverable } from './errors/codes';
+export type { ErrorMetadata } from './errors/codes';
 
 // Engines (for advanced usage)
 export { HallucinationEngine } from './engines/hallucination';
@@ -271,3 +273,49 @@ export {
   loadConfigFile,
   createDefaultConfigFile
 } from './config';
+
+// Logging & Audit (v1.4.0)
+export { Logger, LogLevel, getLogger, setLogger, resetLogger } from './logging/logger';
+export type { LogEntry, LoggerConfig } from './logging/logger';
+export type { AuditEntry as AuditEntryV2, AuditConfig as AuditConfigV2 } from './logging/audit';
+
+// Baseline & Drift Detection (v1.4.0)
+export { BaselineStorage, getBaselineStorage, resetBaselineStorage } from './baseline/storage';
+export type { BaselineMetrics, DriftRecord, BaselineConfig } from './baseline/storage';
+
+// Plugin System (v1.4.0)
+export { PluginRegistry, getPluginRegistry, resetPluginRegistry } from './plugins/registry';
+export type { Plugin, PluginContext, PluginResult, PluginFunction } from './plugins/registry';
+export {
+  use,
+  createPlugin,
+  createBlacklistPlugin,
+  createRegexPlugin,
+  createLengthValidatorPlugin,
+  createKeywordDetectorPlugin
+} from './plugins/api';
+
+// Security Utilities (v1.4.0)
+export {
+  validateInput,
+  safeRegexTest,
+  sanitizeForLogging,
+  sanitizeObject,
+  validateArray,
+  validateUrl,
+  escapeHtml,
+  detectInjection,
+  RateLimiter,
+  SECURITY_LIMITS
+} from './security/validators';
+
+// Badge Generator (v1.4.0)
+export {
+  generateBadgeSignature,
+  verifyBadgeSignature,
+  generateBadgeMarkdown,
+  generateBadgeHTML,
+  generateBadgeForProject,
+  extractBadgeVerification
+} from './badge/generator';
+export type { BadgeConfig, BadgeVerification } from './badge/generator';

@@ -14,12 +14,17 @@ import { Config, DEFAULT_CONFIG, TIER_LIMITS } from './types/config';
 import { VerifyResult } from './types/results';
 import { VERSION } from './constants';
 import { PrivacyViolationError, ValidationError, VerificationError } from './errors';
+import { ErrorCode } from './errors/codes';
 import { HallucinationEngine } from './engines/hallucination';
 import { ConsistencyEngine } from './engines/consistency';
 import { JSONValidatorEngine } from './engines/json-validator';
 import { CSM6Baseline } from './csm6/baseline';
 import { RiskScoringEngine } from './engines/risk-scoring';
 import { loadConfig } from './config';
+import { getLogger } from './logging/logger';
+import { getAuditLogger } from './logging/audit';
+import { getBaselineStorage } from './baseline/storage';
+import { getPluginRegistry } from './plugins/registry';
 
 export interface VerifyOptions {
   content: string;
@@ -53,6 +58,17 @@ export interface VerifyOptions {
 export async function verify(options: VerifyOptions): Promise<VerifyResult> {
   const startTime = Date.now();
   const verificationId = uuidv4();
+  
+  // Initialize logging
+  const logger = getLogger();
+  const auditLogger = getAuditLogger();
+  const requestId = logger.startRequest();
+  
+  logger.info('Verification started', {
+    requestId,
+    contentLength: options.content.length,
+    hasContext: !!options.context
+  });
   
   // Load config from file/env, then merge with runtime options
   const baseConfig = loadConfig(options.config);
@@ -139,6 +155,23 @@ export async function verify(options: VerifyOptions): Promise<VerifyResult> {
     // Wait for all engines
     await Promise.all(enginePromises);
     
+    // Execute plugins
+    const pluginRegistry = getPluginRegistry();
+    const pluginResults = await pluginRegistry.executeAll({
+      content: options.content,
+      prompt: options.context?.isJSON ? 'JSON validation' : undefined,
+      config,
+      metadata: { requestId }
+    });
+    
+    // Add plugin findings to result
+    if (pluginResults.length > 0) {
+      logger.info('Plugins executed', {
+        requestId,
+        pluginCount: pluginResults.length
+      });
+    }
+    
     // Calculate overall risk
     const riskEngine = new RiskScoringEngine(config);
     result.risk = riskEngine.calculate(result as VerifyResult);
@@ -147,10 +180,68 @@ export async function verify(options: VerifyOptions): Promise<VerifyResult> {
     result.limitations = [...new Set(result.limitations)];
     
   } catch (error) {
+    logger.error('Verification failed', error as Error, {
+      requestId,
+      contentLength: options.content.length
+    });
     throw new VerificationError(`Verification failed: ${(error as Error).message}`);
   }
   
   const endTime = Date.now();
+  const duration = logger.endRequest() || (endTime - startTime);
+  
+  // Log completion
+  logger.info('Verification completed', {
+    requestId,
+    duration,
+    riskLevel: result.risk?.level,
+    findingsCount: result.csm6?.findings?.length || 0
+  });
+  
+  // Audit trail
+  auditLogger.logVerification({
+    requestId,
+    content: options.content,
+    prompt: options.context?.isJSON ? 'JSON validation' : undefined,
+    riskLevel: result.risk?.level || 'unknown',
+    findingsCount: result.csm6?.findings?.length || 0,
+    blocked: result.risk?.action === 'block',
+    duration,
+    enginesUsed,
+    configTier: config.tier
+  });
+  
+  // Baseline tracking and drift detection
+  const baselineStorage = getBaselineStorage();
+  baselineStorage.updateBaseline({
+    latency: duration,
+    contentLength: options.content.length,
+    riskScore: result.risk?.overall || 0,
+    riskLevel: result.risk?.level || 'low',
+    engineScores: {
+      hallucination: result.hallucination?.riskScore,
+      consistency: (result.consistency as any)?.score || 0,
+      csm6: result.csm6?.riskScore
+    }
+  });
+  
+  // Check for drift
+  const drifts = baselineStorage.checkDrift({
+    latency: duration,
+    contentLength: options.content.length,
+    riskScore: result.risk?.overall || 0
+  });
+  
+  if (drifts.length > 0) {
+    logger.warn('Baseline drift detected', {
+      requestId,
+      drifts: drifts.map(d => ({
+        metric: d.metric,
+        driftPercent: d.driftPercent.toFixed(2) + '%',
+        severity: d.severity
+      }))
+    });
+  }
   
   return {
     ...result,
@@ -234,18 +325,51 @@ function validatePrivacyCompliance(config: Config): void {
 }
 
 /**
- * Validate input constraints
+ * Validate input with comprehensive checks
  */
 function validateInput(content: string, config: Config): void {
+  // Check for empty input
   if (!content || content.trim().length === 0) {
-    throw new ValidationError('Content cannot be empty');
+    throw new ValidationError(
+      'Content cannot be empty',
+      ErrorCode.EMPTY_INPUT,
+      { contentLength: content?.length || 0 }
+    );
   }
   
-  if (content.length > config.performance.maxContentLength) {
+  // Check for invalid characters
+  if (!/^[\x00-\x7F\u0080-\uFFFF]*$/.test(content)) {
     throw new ValidationError(
-      `Content exceeds maximum length of ${config.performance.maxContentLength} characters. ` +
-      `Current length: ${content.length}. ` +
-      `Upgrade to ${config.tier === 'free' ? 'Team' : 'Professional'} tier for higher limits.`
+      'Content contains invalid characters',
+      ErrorCode.INVALID_ENCODING,
+      { contentLength: content.length }
+    );
+  }
+  
+  // Check tier limits
+  const limits = TIER_LIMITS[config.tier];
+  if (content.length > (limits.performance?.maxContentLength || 100000)) {
+    throw new ValidationError(
+      `Content exceeds tier limit (${limits.performance?.maxContentLength || 100000} chars). ` +
+      `Current: ${content.length} chars. ` +
+      `Upgrade to ${config.tier === 'free' ? 'Team' : 'Professional'} tier for higher limits.`,
+      ErrorCode.CONTENT_TOO_LARGE,
+      {
+        contentLength: content.length,
+        maxLength: limits.performance?.maxContentLength || 100000,
+        currentTier: config.tier,
+        suggestedTier: config.tier === 'free' ? 'team' : 'professional'
+      }
+    );
+  }
+  
+  // Absolute maximum safety check (prevent DoS)
+  const ABSOLUTE_MAX = 10 * 1024 * 1024; // 10MB
+  if (content.length > ABSOLUTE_MAX) {
+    throw new ValidationError(
+      `Content exceeds absolute maximum size (${ABSOLUTE_MAX} bytes)`,
+      ErrorCode.CONTENT_TOO_LARGE,
+      { contentLength: content.length, maxLength: ABSOLUTE_MAX }
     );
   }
 }

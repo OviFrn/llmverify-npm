@@ -5,6 +5,71 @@ All notable changes to llmverify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2024-12-04
+
+### Added - Enterprise Features
+
+**Enhanced Error Handling:**
+- 20+ standardized error codes (LLMVERIFY_1001 format)
+- Error severity levels (low, medium, high, critical)
+- Error metadata with actionable suggestions
+- Recoverable/non-recoverable classification
+- JSON serialization support
+
+**Logging & Audit System:**
+- Structured logging to `~/.llmverify/logs/*.jsonl`
+- Request ID tracking with UUID
+- Automatic PII sanitization in logs
+- Log rotation (10MB max, keep 10 files)
+- Audit trail to `~/.llmverify/audit/*.jsonl`
+- SHA-256 content hashing
+- Compliance-ready audit exports
+- Log statistics & analytics
+
+**Baseline Drift Detection:**
+- Baseline metrics storage (`~/.llmverify/baseline/baseline.json`)
+- Running averages for latency, content length, risk score
+- Risk distribution tracking
+- Engine score tracking
+- Drift detection with 20% threshold
+- Drift history tracking
+- CLI commands: `baseline:stats`, `baseline:reset`, `baseline:drift`
+
+**Plugin System:**
+- Extensible rule system for custom verification
+- Plugin registry with enable/disable
+- Priority-based execution
+- Category-based filtering
+- Built-in helpers: blacklist, regex, length validator, keyword detector
+- `use()` API for plugin registration
+
+**Security Hardening:**
+- Input validation with size limits
+- Safe regex execution with timeout protection
+- PII sanitization utilities
+- Rate limiter class
+- XSS prevention (HTML escaping)
+- Injection detection
+- URL validation
+
+### Changed
+- `verify()` now integrates logging, audit, baseline tracking, and plugins
+- Enhanced input validation with better error messages
+- Improved error handling throughout codebase
+
+### API Additions
+- `ErrorCode`, `ErrorSeverity`, `getErrorMetadata()`
+- `Logger`, `getLogger()`, `LogLevel`
+- `AuditLogger`, `getAuditLogger()`
+- `BaselineStorage`, `getBaselineStorage()`
+- `Plugin`, `use()`, `createPlugin()`
+- `RateLimiter`, `sanitizeForLogging()`, `safeRegexTest()`
+
+### Documentation
+- Complete implementation of enterprise features
+- All APIs exported and documented
+- CLI commands for baseline management
+
 ## [1.3.1] - 2024-12-04
 
 ### Added

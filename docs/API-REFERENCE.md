@@ -1,12 +1,27 @@
 # llmverify API Reference
 
-Complete programmatic API documentation for llmverify v1.3.0+
+Complete programmatic API documentation for llmverify v1.4.0+
+
+## What's New in v1.4.0
+
+- **Enhanced Error Handling** - Standardized error codes with actionable suggestions
+- **Logging & Audit System** - Structured logging and compliance-ready audit trails
+- **Baseline Drift Detection** - Automatic performance tracking and drift alerts
+- **Plugin System** - Extensible verification rules
+- **Security Utilities** - Rate limiting, PII sanitization, safe regex execution
+
+See [CHANGELOG.md](../CHANGELOG.md) for complete details.
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Core API](#core-api)
 - [Configuration Management](#configuration-management)
+- [Error Handling (v1.4.0)](#error-handling-v140)
+- [Logging & Audit (v1.4.0)](#logging--audit-v140)
+- [Baseline & Drift (v1.4.0)](#baseline--drift-v140)
+- [Plugin System (v1.4.0)](#plugin-system-v140)
+- [Security Utilities (v1.4.0)](#security-utilities-v140)
 - [Verification Functions](#verification-functions)
 - [Security Functions](#security-functions)
 - [Classification Functions](#classification-functions)
@@ -209,6 +224,247 @@ console.log(`Config created at: ${configPath}`);
 
 ```bash
 npx llmverify init
+```
+
+---
+
+## Error Handling (v1.4.0)
+
+### Error Codes
+
+llmverify v1.4.0 introduces standardized error codes for consistent error handling.
+
+```typescript
+import { ErrorCode, getErrorMetadata } from 'llmverify';
+
+// Available error codes
+ErrorCode.INVALID_INPUT          // LLMVERIFY_1001
+ErrorCode.EMPTY_INPUT            // LLMVERIFY_1002
+ErrorCode.CONTENT_TOO_LARGE      // LLMVERIFY_1003
+ErrorCode.MALFORMED_CONFIG       // LLMVERIFY_2001
+ErrorCode.TIMEOUT                // LLMVERIFY_3001
+ErrorCode.PORT_IN_USE            // LLMVERIFY_4001
+// ... and more
+
+// Get error metadata
+const metadata = getErrorMetadata(ErrorCode.CONTENT_TOO_LARGE);
+console.log(metadata.suggestion); // Actionable fix
+```
+
+### Enhanced Error Classes
+
+All errors now include error codes and metadata:
+
+```typescript
+import { verify, ValidationError } from 'llmverify';
+
+try {
+  await verify({ content: largeContent });
+} catch (error) {
+  console.log(error.code);              // LLMVERIFY_1003
+  console.log(error.metadata.severity); // 'medium'
+  console.log(error.metadata.suggestion); // 'Reduce content size...'
+}
+```
+
+---
+
+## Logging & Audit (v1.4.0)
+
+### Logger
+
+Structured logging with automatic PII sanitization.
+
+```typescript
+import { getLogger, LogLevel } from 'llmverify';
+
+const logger = getLogger({
+  level: LogLevel.INFO,
+  sanitizePII: true
+});
+
+const requestId = logger.startRequest();
+logger.info('Processing', { userId: '123' });
+logger.warn('High latency detected', { latency: 500 });
+logger.error('Operation failed', error);
+
+const duration = logger.endRequest();
+```
+
+**Logs stored in:** `~/.llmverify/logs/*.jsonl`
+
+### Audit Logger
+
+Compliance-ready audit trails.
+
+```typescript
+import { getAuditLogger } from 'llmverify';
+
+const auditLogger = getAuditLogger();
+
+// Automatically logs all verifications
+// Manual logging:
+auditLogger.logVerification({
+  requestId,
+  content,
+  riskLevel: 'low',
+  findingsCount: 0,
+  blocked: false,
+  duration: 100,
+  enginesUsed: ['hallucination'],
+  configTier: 'free'
+});
+```
+
+**Audit trail stored in:** `~/.llmverify/audit/*.jsonl`
+
+---
+
+## Baseline & Drift (v1.4.0)
+
+### Baseline Storage
+
+Automatic performance tracking and drift detection.
+
+```typescript
+import { getBaselineStorage } from 'llmverify';
+
+const storage = getBaselineStorage();
+
+// Get statistics
+const stats = storage.getStatistics();
+console.log(`Samples: ${stats.sampleCount}`);
+console.log(`Drift records: ${stats.driftRecordCount}`);
+
+// Check for drift
+const drifts = storage.checkDrift({
+  latency: 150,
+  riskScore: 0.5
+});
+
+if (drifts.length > 0) {
+  console.log('Drift detected!', drifts);
+}
+
+// Reset baseline
+storage.resetBaseline();
+```
+
+**CLI Commands:**
+```bash
+npx llmverify baseline:stats  # Show statistics
+npx llmverify baseline:reset  # Reset baseline
+npx llmverify baseline:drift  # Show drift history
+```
+
+---
+
+## Plugin System (v1.4.0)
+
+### Create Custom Plugins
+
+Extend llmverify with custom verification rules.
+
+```typescript
+import { use, createPlugin } from 'llmverify';
+
+const customRule = createPlugin({
+  id: 'my-custom-rule',
+  name: 'Custom Verification Rule',
+  version: '1.0.0',
+  category: 'security',
+  priority: 10,
+  execute: async (context) => {
+    const findings = [];
+    
+    // Your custom logic here
+    if (context.content.includes('forbidden')) {
+      findings.push({
+        category: 'security',
+        severity: 'high',
+        message: 'Forbidden content detected'
+      });
+    }
+    
+    return {
+      findings,
+      score: findings.length > 0 ? 0.8 : 0
+    };
+  }
+});
+
+// Register plugin
+use(customRule);
+
+// Now all verify() calls will use your plugin
+```
+
+### Built-in Plugin Helpers
+
+```typescript
+import { createBlacklistPlugin, createRegexPlugin } from 'llmverify';
+
+// Blacklist plugin
+const blacklist = createBlacklistPlugin(['spam', 'scam']);
+use(blacklist);
+
+// Regex plugin
+const regex = createRegexPlugin([
+  { pattern: /\d{16}/, message: 'Credit card detected', severity: 'high' }
+]);
+use(regex);
+```
+
+---
+
+## Security Utilities (v1.4.0)
+
+### Rate Limiter
+
+Token bucket rate limiting.
+
+```typescript
+import { RateLimiter } from 'llmverify';
+
+const limiter = new RateLimiter(100, 60000); // 100 req/min
+
+if (!limiter.isAllowed(userId)) {
+  throw new Error('Rate limit exceeded');
+}
+
+const remaining = limiter.getRemaining(userId);
+console.log(`Remaining: ${remaining}`);
+```
+
+### PII Sanitization
+
+```typescript
+import { sanitizeForLogging, sanitizeObject } from 'llmverify';
+
+const safe = sanitizeForLogging('Email: test@example.com, Phone: 555-1234');
+// "Email: [EMAIL], Phone: [PHONE]"
+
+const safeObj = sanitizeObject({ password: 'secret', data: 'public' });
+// { password: '[REDACTED]', data: 'public' }
+```
+
+### Safe Regex Execution
+
+```typescript
+import { safeRegexTest } from 'llmverify';
+
+const pattern = /complex+pattern/;
+const result = safeRegexTest(pattern, text, 100); // 100ms timeout
+```
+
+### Input Validation
+
+```typescript
+import { validateInput, validateArray, validateUrl } from 'llmverify';
+
+const safe = validateInput(userInput, 10000); // Max 10k chars
+const arr = validateArray(items, 1000); // Max 1000 items
+const isValid = validateUrl('https://example.com');
 ```
 
 ---

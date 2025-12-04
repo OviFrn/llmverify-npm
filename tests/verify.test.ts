@@ -57,7 +57,7 @@ describe('verify', () => {
     
     it('should reject content exceeding max length', async () => {
       const longContent = 'a'.repeat(20000);
-      await expect(verify({ content: longContent })).rejects.toThrow('exceeds maximum length');
+      await expect(verify({ content: longContent })).rejects.toThrow('exceeds tier limit');
     });
   });
   

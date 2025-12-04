@@ -8,76 +8,88 @@
  * @license MIT
  */
 
+import { ErrorCode, ErrorMetadata, getErrorMetadata } from './errors/codes';
+
 /**
  * Base error class for llmverify
  */
 export class LLMVerifyError extends Error {
-  constructor(message: string) {
+  public readonly code?: ErrorCode;
+  public readonly metadata?: ErrorMetadata;
+  public readonly requestId?: string;
+  
+  constructor(message: string, code?: ErrorCode, details?: any, requestId?: string) {
     super(message);
     this.name = 'LLMVerifyError';
-    Object.setPrototypeOf(this, new.target.prototype);
+    this.code = code;
+    this.requestId = requestId;
+    
+    if (code) {
+      this.metadata = getErrorMetadata(code, details, requestId);
+    }
+    
+    Error.captureStackTrace(this, this.constructor);
+  }
+  
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      code: this.code,
+      metadata: this.metadata,
+      stack: this.stack
+    };
   }
 }
 
 /**
  * Privacy violation error
- * 
- * Thrown when an operation would violate privacy guarantees.
- * This is a CRITICAL error - free tier must never make network requests.
  */
 export class PrivacyViolationError extends LLMVerifyError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, details?: any, requestId?: string) {
+    super(message, ErrorCode.PRIVACY_VIOLATION, details, requestId);
     this.name = 'PrivacyViolationError';
   }
 }
 
 /**
  * Validation error
- * 
- * Thrown when input validation fails.
  */
 export class ValidationError extends LLMVerifyError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, code?: ErrorCode, details?: any, requestId?: string) {
+    super(message, code || ErrorCode.INVALID_INPUT, details, requestId);
     this.name = 'ValidationError';
   }
 }
 
 /**
  * Verification error
- * 
- * Thrown when verification process fails.
  */
 export class VerificationError extends LLMVerifyError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, code?: ErrorCode, details?: any, requestId?: string) {
+    super(message, code || ErrorCode.ENGINE_FAILURE, details, requestId);
     this.name = 'VerificationError';
   }
 }
 
 /**
  * Configuration error
- * 
- * Thrown when configuration is invalid.
  */
 export class ConfigurationError extends LLMVerifyError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, code?: ErrorCode, details?: any, requestId?: string) {
+    super(message, code || ErrorCode.INVALID_CONFIG, details, requestId);
     this.name = 'ConfigurationError';
   }
 }
 
 /**
  * Engine error
- * 
- * Thrown when an engine fails during processing.
  */
 export class EngineError extends LLMVerifyError {
   public readonly engineName: string;
   
-  constructor(engineName: string, message: string) {
-    super(`[${engineName}] ${message}`);
+  constructor(engineName: string, message: string, details?: any, requestId?: string) {
+    super(`[${engineName}] ${message}`, ErrorCode.ENGINE_FAILURE, { ...details, engineName }, requestId);
     this.name = 'EngineError';
     this.engineName = engineName;
   }

@@ -110,6 +110,114 @@ console.log(response.llmverify.health); // 'stable' | 'degraded' | 'unstable'
 
 ---
 
+## 🆕 Enterprise Features (v1.4.0)
+
+**NEW in v1.4.0**: Production-grade monitoring, logging, and extensibility.
+
+### Enhanced Error Handling
+```typescript
+import { verify, ErrorCode } from 'llmverify';
+
+try {
+  const result = await verify({ content });
+} catch (error) {
+  console.log(error.code); // LLMVERIFY_1003
+  console.log(error.metadata.suggestion); // Actionable fix
+}
+```
+
+### Logging & Audit Trails
+```typescript
+import { getLogger, getAuditLogger } from 'llmverify';
+
+const logger = getLogger({ level: 'info' });
+const requestId = logger.startRequest();
+logger.info('Processing request', { userId: '123' });
+
+// Compliance-ready audit trail
+const auditLogger = getAuditLogger();
+// Automatically logs all verifications to ~/.llmverify/audit/
+```
+
+### Baseline Drift Detection
+```typescript
+import { getBaselineStorage } from 'llmverify';
+
+const storage = getBaselineStorage();
+const stats = storage.getStatistics();
+console.log(`Baseline: ${stats.sampleCount} samples`);
+
+// Automatic drift detection (20% threshold)
+// CLI: npx llmverify baseline:stats
+```
+
+### Plugin System
+```typescript
+import { use, createPlugin } from 'llmverify';
+
+const customRule = createPlugin({
+  id: 'my-rule',
+  name: 'Custom Verification Rule',
+  execute: async (context) => ({
+    findings: [],
+    score: 0
+  })
+});
+
+use(customRule);
+// Now all verify() calls include your custom rule
+```
+
+### Security Utilities
+```typescript
+import { RateLimiter, sanitizeForLogging, safeRegexTest } from 'llmverify';
+
+const limiter = new RateLimiter(100, 60000); // 100 req/min
+if (!limiter.isAllowed(userId)) {
+  throw new Error('Rate limit exceeded');
+}
+
+// PII-safe logging
+const safe = sanitizeForLogging(content); // Removes emails, phones, SSNs
+```
+
+**See [CHANGELOG.md](CHANGELOG.md) for complete v1.4.0 feature list.**
+
+---
+
+## 📛 Show Your Badge
+
+Display the "Built with llmverify" badge on your project to show you're using AI verification!
+
+### Generate Your Badge
+
+```bash
+npx llmverify badge --name "My Project" --url "https://myproject.com"
+```
+
+### Add to Your README
+
+```markdown
+[![Built with llmverify](https://img.shields.io/badge/Built_with-llmverify-blue)](https://github.com/subodhkc/llmverify-npm)
+```
+
+### Programmatic Badge Generation
+
+```typescript
+import { generateBadgeForProject } from 'llmverify';
+
+const { markdown, html } = generateBadgeForProject('My Project', 'https://myproject.com');
+console.log(markdown); // Copy to README.md
+```
+
+**Badge Features:**
+- ✅ Verified signature for authenticity
+- ✅ Markdown and HTML formats
+- ✅ Customizable project name and URL
+- ✅ Downloadable badge image in `/assets/badge.svg`
+
+---
+
 ## Server Mode — Run llmverify in Your IDE
 
 **NEW in v1.3.0**: Start a long-running HTTP server for seamless IDE integration.

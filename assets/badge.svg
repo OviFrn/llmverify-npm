@@ -1,0 +1,13 @@
+<svg width="1024" height="768" viewBox="0 0 1024 768" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="274" width="984" height="220" rx="110" fill="#2D3748" stroke="#2D3748" stroke-width="8"/>
+  <rect x="36" y="290" width="952" height="188" rx="94" fill="white"/>
+  
+  <!-- Shield Icon -->
+  <rect x="100" y="388" width="152" height="152" rx="8" fill="none" stroke="#3182CE" stroke-width="8"/>
+  <path d="M176 420 L200 444 L236 408" stroke="#3182CE" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M176 480 L176 520 C176 528 180 532 188 536 C196 540 204 540 212 536 C220 532 224 528 224 520 L224 480" stroke="#3182CE" stroke-width="6" stroke-linecap="round" fill="none"/>
+  
+  <!-- Text -->
+  <text x="320" y="440" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="#2D3748">Built with</text>
+  <text x="320" y="510" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="#2D3748">llmverify</text>
+</svg>

@@ -1030,6 +1030,132 @@ program
 // ============================================================================
 
 program
+  .command('baseline')
+  .description('Manage baseline metrics and drift detection')
+  .action(() => {
+    console.log(chalk.blue('\n📊 Baseline Management\n'));
+    console.log('Available subcommands:');
+    console.log(`  ${chalk.cyan('baseline stats')}   - Show baseline statistics`);
+    console.log(`  ${chalk.cyan('baseline reset')}   - Reset baseline metrics`);
+    console.log(`  ${chalk.cyan('baseline drift')}   - Show recent drift records`);
+    console.log('\nRun with --help for more information');
+  });
+
+program
+  .command('baseline:stats')
+  .description('Show baseline statistics')
+  .action(() => {
+    try {
+      const { getBaselineStorage } = require('./baseline/storage');
+      const storage = getBaselineStorage();
+      const stats = storage.getStatistics();
+      
+      console.log(chalk.blue('\n📊 Baseline Statistics\n'));
+      
+      if (!stats.hasBaseline) {
+        console.log(chalk.yellow('No baseline data available yet.'));
+        console.log(chalk.dim('Baseline will be created automatically as you use llmverify.'));
+        return;
+      }
+      
+      console.log(chalk.green('Status:'), 'Active');
+      console.log(chalk.green('Sample Count:'), stats.sampleCount);
+      console.log(chalk.green('Created:'), stats.createdAt);
+      console.log(chalk.green('Updated:'), stats.updatedAt);
+      console.log(chalk.green('Drift Records:'), stats.driftRecordCount);
+      
+      if (stats.recentDrifts.length > 0) {
+        console.log(chalk.yellow('\n⚠️  Recent Drift Detected:\n'));
+        stats.recentDrifts.forEach((drift: any) => {
+          console.log(`  ${chalk.cyan(drift.metric)}: ${drift.driftPercent.toFixed(2)}% (${drift.severity})`);
+        });
+      } else {
+        console.log(chalk.green('\n✓ No significant drift detected'));
+      }
+    } catch (error) {
+      console.error(chalk.red('Failed to load baseline stats:', (error as Error).message));
+    }
+  });
+
+program
+  .command('baseline:reset')
+  .description('Reset baseline metrics')
+  .action(() => {
+    try {
+      const { getBaselineStorage } = require('./baseline/storage');
+      const storage = getBaselineStorage();
+      storage.resetBaseline();
+      console.log(chalk.green('\n✓ Baseline reset successfully'));
+      console.log(chalk.dim('New baseline will be created on next verification'));
+    } catch (error) {
+      console.error(chalk.red('Failed to reset baseline:', (error as Error).message));
+    }
+  });
+
+program
+  .command('baseline:drift')
+  .description('Show recent drift records')
+  .option('-n, --limit <number>', 'Number of records to show', '20')
+  .action((options) => {
+    try {
+      const { getBaselineStorage } = require('./baseline/storage');
+      const storage = getBaselineStorage();
+      const drifts = storage.readDriftHistory(parseInt(options.limit));
+      
+      console.log(chalk.blue(`\n📈 Recent Drift Records (${drifts.length})\n`));
+      
+      if (drifts.length === 0) {
+        console.log(chalk.green('No drift records found'));
+        return;
+      }
+      
+      drifts.forEach((drift: any) => {
+        const color = drift.severity === 'significant' ? chalk.red : 
+                     drift.severity === 'moderate' ? chalk.yellow : chalk.dim;
+        console.log(color(`[${drift.timestamp}] ${drift.metric}: ${drift.driftPercent.toFixed(2)}% (${drift.severity})`));
+      });
+    } catch (error) {
+      console.error(chalk.red('Failed to read drift history:', (error as Error).message));
+    }
+  });
+
+program
+  .command('badge')
+  .description('Generate "Built with llmverify" badge for your project')
+  .option('-n, --name <name>', 'Project name')
+  .option('-u, --url <url>', 'Project URL')
+  .option('-o, --output <path>', 'Output file path')
+  .action((options) => {
+    try {
+      const { generateBadgeForProject, saveBadgeToFile } = require('./badge/generator');
+      
+      if (!options.name) {
+        console.error(chalk.red('Error: Project name is required'));
+        console.log(chalk.dim('Usage: npx llmverify badge --name "My Project" --url "https://example.com"'));
+        return;
+      }
+      
+      if (options.output) {
+        saveBadgeToFile(options.output, options.name, options.url);
+        console.log(chalk.green(`\n✓ Badge saved to: ${options.output}\n`));
+      } else {
+        const { markdown, html, signature } = generateBadgeForProject(options.name, options.url);
+        
+        console.log(chalk.blue('\n📛 Built with llmverify Badge\n'));
+        console.log(chalk.green('Markdown:'));
+        console.log(chalk.dim(markdown));
+        console.log('\n' + chalk.green('HTML:'));
+        console.log(chalk.dim(html));
+        console.log('\n' + chalk.green('Verification Signature:'));
+        console.log(chalk.dim(signature));
+        console.log('\n' + chalk.yellow('💡 Copy the code above and paste it into your README.md'));
+      }
+    } catch (error) {
+      console.error(chalk.red('Failed to generate badge:', (error as Error).message));
+    }
+  });
+
+program
   .command('adapters')
   .description('List available provider adapters')
   .action(() => {
